@@ -1,0 +1,2182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>학교 성취평가 컨설팅 연수</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&family=Nanum+Myeongjo:wght@700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, get, onValue, push, update }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  // ═══════════════════════════════════════════
+  // 🔥 여기에 Firebase 설정을 입력하세요!
+  // ═══════════════════════════════════════════
+  const firebaseConfig = {
+    apiKey: "AIzaSyC_tApxtv02eIyVzfCk-SM6yG7-C1bZBn0",
+    authDomain: "hhh-427fa.firebaseapp.com",
+    databaseURL: "https://hhh-427fa-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "hhh-427fa",
+    storageBucket: "hhh-427fa.firebasestorage.app",
+    messagingSenderId: "413170031833",
+    appId: "1:413170031833:web:5da7556390b06638b8b2c8"
+  };
+  // ═══════════════════════════════════════════
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+
+  // DB 함수들을 전역으로 노출
+  window.DB = {
+    set:     (path, data)          => set(ref(db, path), data),
+    get:     (path)                => get(ref(db, path)).then(s => s.val()),
+    on:      (path, cb)            => onValue(ref(db, path), s => cb(s.val())),
+    push:    (path, data)          => push(ref(db, path), data),
+    update:  (path, data)          => update(ref(db, path), data),
+  };
+  window.DB_READY = true;
+  document.dispatchEvent(new Event('db-ready'));
+</script>
+
+<style>
+:root{
+  --bg:#f4f2ed;--surface:#fff;--s2:#edeae3;--border:#ddd9cf;
+  --text:#1c1814;--muted:#8a8070;
+  --accent:#1a4d2e;--accent-lt:#e6f2eb;
+  --p1:#5b21b6;--p1l:#f3eeff;  /* 실습1 보라 */
+  --p2:#0c4a6e;--p2l:#e0f2fe;  /* 실습2 파랑 */
+  --p3:#92400e;--p3l:#fef3c7;  /* 실습3 주황 */
+  --p4:#064e3b;--p4l:#d1fae5;  /* 실습4 초록 */
+  --lva:#14532d;--lvab:#dcfce7;
+  --lvb:#1e3a8a;--lvbb:#dbeafe;
+  --lvc:#713f12;--lvcb:#fef9c3;
+  --lvd:#7c2d12;--lvdb:#ffedd5;
+  --lve:#7f1d1d;--lveb:#fee2e2;
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--accent);color:#fff;padding:0 20px;height:52px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:300;box-shadow:0 2px 14px rgba(0,0,0,.25)}
+.topbar h1{font-family:'Nanum Myeongjo',serif;font-size:.92rem;font-weight:800}
+.tbr{margin-left:auto;display:flex;gap:6px;align-items:center}
+.tbadge{font-size:.68rem;background:rgba(255,255,255,.18);padding:3px 9px;border-radius:10px}
+.tcode{font-size:.72rem;background:rgba(110,231,183,.25);color:#6ee7b7;padding:3px 9px;border-radius:10px;font-family:'DM Mono',monospace;font-weight:700;letter-spacing:2px}
+
+/* ── STEPPER ── */
+.stepper{background:var(--surface);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;position:sticky;top:52px;z-index:200;scrollbar-width:none}
+.stepper::-webkit-scrollbar{display:none}
+.si{display:flex;align-items:center;gap:6px;padding:11px 14px;border-bottom:3px solid transparent;white-space:nowrap;font-size:.78rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s;flex-shrink:0}
+.si.active{color:var(--accent);border-bottom-color:var(--accent)}
+.si.done{color:#22c55e}
+.sn{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;background:var(--s2);color:var(--muted)}
+.si.active .sn{background:var(--accent);color:#fff}
+.si.done .sn{background:#22c55e;color:#fff}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1050px;margin:0 auto;padding:22px 20px}
+.phase{display:none}.phase.active{display:block}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.cl{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:10px}
+.pt{font-family:'Nanum Myeongjo',serif;font-size:1.15rem;font-weight:800;margin-bottom:3px}
+.pd{font-size:.8rem;color:var(--muted);margin-bottom:14px;line-height:1.6}
+
+/* ── 실습 헤더 배지 ── */
+.practice-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;font-size:.76rem;font-weight:700;margin-bottom:14px}
+.pb1{background:var(--p1l);color:var(--p1);border:1.5px solid #c4b5fd}
+.pb2{background:var(--p2l);color:var(--p2);border:1.5px solid #7dd3fc}
+.pb3{background:var(--p3l);color:var(--p3);border:1.5px solid #fcd34d}
+.pb4{background:var(--p4l);color:var(--p4);border:1.5px solid #6ee7b7}
+
+/* ── FORMS ── */
+label{font-size:.8rem;color:var(--muted);display:block;margin-bottom:3px;font-weight:500}
+input,select,textarea{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:7px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:.86rem;padding:7px 10px;outline:none;transition:border-color .2s;margin-bottom:10px}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:80px}
+.row{display:flex;gap:10px;align-items:flex-end}.row>*{flex:1}.row>.btn{flex:0}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:7px;border:none;font-family:'Noto Sans KR',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .18s;white-space:nowrap}
+.btn-p{background:var(--accent);color:#fff}.btn-p:hover{background:#143d24;transform:translateY(-1px)}
+.btn-o{background:transparent;color:var(--accent);border:2px solid var(--accent)}.btn-o:hover{background:var(--accent-lt)}
+.btn-g{background:var(--s2);color:var(--text);border:1.5px solid var(--border)}.btn-g:hover{border-color:var(--accent);color:var(--accent)}
+.btn-f{width:100%}.btn-lg{padding:11px 24px;font-size:.9rem}.btn-sm{padding:5px 11px;font-size:.76rem}
+
+/* ── CODE BOX ── */
+.code-box{background:#0f1117;border-radius:8px;padding:16px;text-align:center;margin:10px 0}
+.code-val{font-family:'DM Mono',monospace;font-size:2rem;color:#6ee7b7;letter-spacing:8px;font-weight:500}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:3px;margin-bottom:14px;background:var(--s2);border-radius:8px;padding:3px}
+.tab{flex:1;padding:8px;border:none;border-radius:6px;background:transparent;font-family:'Noto Sans KR',sans-serif;font-size:.82rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s}
+.tab.active{background:var(--surface);color:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+
+/* ── ROLE GRID ── */
+.rg{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:7px;margin-bottom:14px}
+.rc{border:2px solid var(--border);border-radius:8px;padding:12px 8px;cursor:pointer;transition:all .2s;background:var(--surface);text-align:center}
+.rc:hover,.rc.sel{border-color:var(--accent);background:var(--accent-lt)}
+.rc .em{font-size:1.4rem;margin-bottom:4px}.rc .rn{font-weight:700;font-size:.84rem}
+
+/* ── MEMBER LIST ── */
+.ml{display:flex;flex-direction:column;gap:5px}
+.mi{display:flex;align-items:center;gap:9px;padding:8px 11px;background:var(--s2);border-radius:7px;font-size:.82rem}
+.mav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;color:#fff;flex-shrink:0}
+
+/* ── ASSESS TABLE ── */
+.at{width:100%;border-collapse:collapse;font-size:.82rem}
+.at th{background:var(--s2);padding:8px 9px;text-align:center;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid var(--border);color:var(--muted);white-space:nowrap}
+.at th.l{text-align:left}
+.at td{padding:4px 7px;border-bottom:1px solid var(--border);vertical-align:middle;text-align:center}
+.at td.num{font-family:'DM Mono',monospace;font-size:.76rem;color:var(--muted);text-align:left;width:32px}
+.at tbody tr:hover{background:var(--s2)}
+
+/* ── LEVEL SELECT ── */
+.lv{margin:0;padding:4px 4px;border-radius:6px;font-weight:700;font-size:.82rem;cursor:pointer;width:64px;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23666'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 4px center;padding-right:14px}
+.lA{color:var(--lva);background:var(--lvab);border-color:#86efac}
+.lB{color:var(--lvb);background:var(--lvbb);border-color:#93c5fd}
+.lC{color:var(--lvc);background:var(--lvcb);border-color:#fde047}
+.lD{color:var(--lvd);background:var(--lvdb);border-color:#fdba74}
+.lE{color:var(--lve);background:var(--lveb);border-color:#fca5a5}
+.l_{color:var(--muted);background:var(--s2);border-color:var(--border)}
+
+/* ── LV BADGE ── */
+.lb{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:4px;font-weight:900;font-size:.8rem}
+.bA{color:var(--lva);background:var(--lvab)}.bB{color:var(--lvb);background:var(--lvbb)}
+.bC{color:var(--lvc);background:var(--lvcb)}.bD{color:var(--lvd);background:var(--lvdb)}
+.bE{color:var(--lve);background:var(--lveb)}.b_{color:var(--muted);background:var(--s2);font-size:.6rem}
+
+/* ── COMPARE TABLE ── */
+.ct{width:100%;border-collapse:collapse;font-size:.78rem}
+.ct th{background:var(--s2);padding:7px 9px;text-align:center;font-size:.66rem;font-weight:700;border-bottom:2px solid var(--border);white-space:nowrap}
+.ct th.gh{border-top:3px solid}
+.ct td{padding:5px 7px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle}
+.ct td.nc{text-align:left;font-family:'DM Mono';font-size:.74rem;color:var(--muted);width:28px}
+.mm{background:#fff8f4!important}
+.mmb{display:inline-block;font-size:.6rem;font-weight:700;padding:1px 4px;border-radius:3px;background:#fee2e2;color:#b91c1c}
+
+/* ── STATS ── */
+.sr{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.sb{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:10px 13px;min-width:85px}
+.sv{font-size:1.3rem;font-weight:900;font-family:'Nanum Myeongjo',serif}
+.sl{font-size:.68rem;color:var(--muted);margin-top:1px}
+
+/* ── PROGRESS ── */
+.pb-wrap{height:5px;background:var(--s2);border-radius:3px;overflow:hidden}
+.pb-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .4s}
+
+/* ── REFLECTION CARD ── */
+.refl-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:8px}
+.refl-h{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.refl-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;color:#fff;flex-shrink:0}
+.refl-name{font-weight:700;font-size:.86rem}
+.refl-group{font-size:.7rem;color:var(--muted)}
+.refl-text{font-size:.82rem;line-height:1.75;white-space:pre-wrap;word-break:break-word}
+
+/* ── DISCUSS TABLE ── */
+.dt{width:100%;border-collapse:collapse;font-size:.84rem}
+.dt th{background:var(--s2);padding:9px 12px;text-align:left;font-size:.72rem;font-weight:700;border-bottom:2px solid var(--border);color:var(--muted)}
+.dt td{padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+.dt td.name-c{font-weight:600;white-space:nowrap;width:80px}
+.dt td.text-c{font-size:.82rem;line-height:1.6}
+
+/* ── ITEM RATE TABLE (실습2) ── */
+.irt{width:100%;border-collapse:collapse;font-size:.82rem}
+.irt th{background:var(--s2);padding:8px 10px;text-align:center;font-size:.68rem;font-weight:700;border-bottom:2px solid var(--border);color:var(--muted)}
+.irt td{padding:5px 8px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle}
+.irt td.l{text-align:left}
+.irt input[type=number]{width:70px;text-align:center;margin-bottom:0;padding:4px 6px}
+.over{color:#b91c1c;font-weight:700}.under{color:#1d4ed8;font-weight:700}.ok{color:#14532d;font-weight:700}
+
+/* ── MISC ── */
+.msg{border-radius:7px;padding:9px 13px;font-size:.8rem;margin-bottom:10px;line-height:1.5}
+.mok{background:#dcfce7;border:1px solid #86efac;color:#14532d}
+.merr{background:#fee2e2;border:1px solid #fca5a5;color:#7f1d1d}
+.minf{background:#dbeafe;border:1px solid #93c5fd;color:#1e3a8a}
+.mw{background:#fef9c3;border:1px solid #fde047;color:#713f12}
+.emp{text-align:center;padding:32px 16px;color:var(--muted)}
+.emp .ic{font-size:1.8rem;margin-bottom:6px}
+.div{height:1px;background:var(--border);margin:12px 0}
+.tag{display:inline-block;padding:2px 6px;border-radius:3px;font-size:.68rem;font-weight:700}
+.nb{background:linear-gradient(135deg,var(--accent),#2d6a4f);color:#fff;border-radius:var(--r);padding:18px 22px;display:flex;align-items:center;justify-content:space-between;margin-top:16px;gap:12px}
+.nb h3{font-family:'Nanum Myeongjo',serif;font-size:.95rem;margin-bottom:2px}
+.nb p{font-size:.78rem;opacity:.85}
+.c0{color:#1a4d2e}.c1{color:#1d4ed8}.c2{color:#9d174d}.c3{color:#92400e}.c4{color:#0f4c75}.c5{color:#4c1d95}
+.bg0{background:#1a4d2e}.bg1{background:#1d4ed8}.bg2{background:#9d174d}.bg3{background:#92400e}.bg4{background:#0f4c75}.bg5{background:#4c1d95}
+.bdt0{border-top-color:#1a4d2e!important}.bdt1{border-top-color:#1d4ed8!important}.bdt2{border-top-color:#9d174d!important}.bdt3{border-top-color:#92400e!important}.bdt4{border-top-color:#0f4c75!important}.bdt5{border-top-color:#4c1d95!important}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(60px);background:#1c1814;color:#fff;padding:8px 20px;border-radius:26px;font-weight:600;font-size:.8rem;transition:transform .3s;z-index:999;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#toast.show{transform:translateX(-50%) translateY(0)}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:400;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal-box{background:var(--surface);border-radius:12px;padding:22px;width:320px;box-shadow:0 8px 28px rgba(0,0,0,.2)}
+.hidden{display:none!important}
+
+/* ── 강사 대시보드 ── */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:16px}
+.dash-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 16px}
+.dash-card h4{font-size:.8rem;font-weight:700;margin-bottom:8px}
+.dash-mini{font-size:.75rem;color:var(--muted);margin-top:4px}
+
+/* ── 섹션 구분 ── */
+.section-divider{display:flex;align-items:center;gap:10px;margin:18px 0 14px}
+.section-divider span{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--muted);white-space:nowrap}
+.section-divider::before,.section-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+@media(max-width:600px){
+  .wrap{padding:14px}
+  .topbar,.stepper{padding:0 12px}
+  .si{padding:10px 10px;font-size:.74rem}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>📋 학교 성취평가 컨설팅 연수</h1>
+  <div class="tbr">
+    <span class="tcode hidden" id="tb-code"></span>
+    <span class="tbadge" id="tb-role">미입장</span>
+  </div>
+</div>
+
+<div class="stepper" id="stepper">
+  <div class="si active" onclick="tryGo(0)"><div class="sn">●</div>입장</div>
+  <div class="si" onclick="tryGo(1)"><div class="sn">1</div>실습1-1 정성</div>
+  <div class="si" onclick="tryGo(2)"><div class="sn">2</div>실습1-2 정량</div>
+  <div class="si" onclick="tryGo(3)"><div class="sn">3</div>실습2 정답률</div>
+  <div class="si" onclick="tryGo(4)"><div class="sn">4</div>실습3 판별수준</div>
+  <div class="si" onclick="tryGo(5)"><div class="sn">5</div>실습4 출제계획</div>
+  <div class="si" onclick="tryGo(6)"><div class="sn">★</div>강사 대시보드</div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════ PHASE 0: 입장 ═══════════ -->
+<div class="phase active" id="p0">
+  <div class="pt">연수 시작 — 입장</div>
+  <div class="pd">강사님은 세션을 만들고, 연수생은 코드로 입장합니다.</div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-i" onclick="setTab('i')">🎓 강사 (세션 생성)</button>
+    <button class="tab" id="tab-t" onclick="setTab('t')">👩‍🏫 연수생 (코드 입장)</button>
+  </div>
+
+  <!-- 강사 패널 -->
+  <div id="pi">
+    <!-- 강사 서브 탭 -->
+    <div style="display:flex;gap:4px;margin-bottom:14px;background:var(--s2);border-radius:8px;padding:3px">
+      <button id="itab-new" style="flex:1;padding:8px;border:none;border-radius:6px;background:var(--surface);color:var(--accent);font-family:'Noto Sans KR',sans-serif;font-size:.83rem;font-weight:700;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.1)" onclick="setITab('new')">✨ 새 세션 만들기</button>
+      <button id="itab-load" style="flex:1;padding:8px;border:none;border-radius:6px;background:transparent;color:var(--muted);font-family:'Noto Sans KR',sans-serif;font-size:.83rem;font-weight:600;cursor:pointer" onclick="setITab('load')">🔍 기존 세션 불러오기</button>
+    </div>
+
+    <!-- 새 세션 만들기 -->
+    <div id="pi-new">
+      <div class="card">
+        <div class="cl">강사 — 새 세션 만들기</div>
+        <div class="row">
+          <div><label>연수 이름</label><input type="text" id="sn" placeholder="예) 2026-05-09 성취평가 연수"></div>
+          <div style="max-width:75px"><label>모둠 수</label><input type="number" id="sgc" value="4" min="1" max="12"></div>
+          <div style="max-width:85px"><label>모둠당 인원</label><input type="number" id="smc" value="4" min="1" max="10"></div>
+        </div>
+        <button class="btn btn-p btn-f" onclick="createSession()">✨ 세션 생성하기</button>
+      </div>
+    </div>
+
+    <!-- 기존 세션 불러오기 -->
+    <div id="pi-load" class="hidden">
+      <div class="card">
+        <div class="cl">강사 — 기존 세션 불러오기</div>
+        <div class="msg minf" style="margin-bottom:12px">
+          이전에 생성한 세션 코드를 입력하면 해당 세션의 모든 데이터를 확인할 수 있습니다.
+        </div>
+        <label>세션 코드</label>
+        <input type="text" id="load-code" placeholder="ABC123" maxlength="6"
+          style="font-family:'DM Mono',monospace;font-size:1.4rem;text-align:center;text-transform:uppercase;letter-spacing:6px"
+          onkeydown="if(event.key==='Enter') loadSession()">
+        <button class="btn btn-p btn-f" onclick="loadSession()">🔍 세션 불러오기</button>
+        <div id="load-err" class="hidden msg merr" style="margin-top:8px"></div>
+      </div>
+
+      <!-- 불러온 세션 정보 -->
+      <div id="pi-loaded" class="hidden">
+        <div class="card" style="background:var(--accent-lt);border-color:#86efac">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:1.8rem">✅</span>
+            <div>
+              <div style="font-weight:700;font-size:.95rem;color:var(--accent)" id="loaded-name"></div>
+              <div style="font-size:.78rem;color:var(--muted);margin-top:2px" id="loaded-sub"></div>
+            </div>
+            <div class="code-box" style="margin:0;padding:10px 16px;flex-shrink:0">
+              <div style="font-size:.6rem;color:#6b7280;margin-bottom:3px;text-transform:uppercase;letter-spacing:1px">세션 코드</div>
+              <div style="font-family:'DM Mono',monospace;font-size:1.2rem;color:#6ee7b7;letter-spacing:4px;font-weight:500" id="loaded-code"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cl">📊 참가 현황</div>
+          <div class="ml" id="loaded-mlist"><div class="emp"><div class="ic">⏳</div><p style="font-size:.8rem">불러오는 중...</p></div></div>
+        </div>
+        <button class="btn btn-p btn-lg btn-f" onclick="tryGo(6)">대시보드에서 확인하기 →</button>
+      </div>
+    </div>
+
+    <!-- 세션 생성 완료 -->
+    <div id="pi-done" class="hidden">
+      <span id="show-code" style="display:none"></span>
+      <div class="card">
+        <div class="cl">✅ 세션 생성 완료 — 링크를 공유하세요</div>
+
+        <!-- 강사용 링크 -->
+        <div style="background:var(--accent);border-radius:8px;padding:13px 16px;margin-bottom:10px">
+          <div style="font-size:.68rem;color:rgba(255,255,255,.7);margin-bottom:5px;text-transform:uppercase;letter-spacing:2px">👨‍🏫 강사용 링크</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.78rem;color:#93c5fd;word-break:break-all;margin-bottom:8px" id="link-instructor">-</div>
+          <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)" onclick="copyLink('instructor')">📋 복사</button>
+          <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3);margin-left:5px" onclick="openLink('instructor')">열기 →</button>
+        </div>
+
+        <!-- 연수생용 링크 -->
+        <div style="background:var(--s2);border:1.5px solid var(--border);border-radius:8px;padding:13px 16px;margin-bottom:10px">
+          <div style="font-size:.68rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:2px">👩‍🏫 연수생용 링크</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.78rem;color:var(--accent);word-break:break-all;margin-bottom:8px" id="link-student">-</div>
+          <button class="btn btn-sm btn-g" onclick="copyLink('student')">📋 복사</button>
+          <button class="btn btn-sm btn-g" style="margin-left:5px" onclick="showQR()">📱 QR코드</button>
+        </div>
+
+        <!-- QR 코드 영역 -->
+        <div id="qr-area" class="hidden" style="text-align:center;padding:14px;background:var(--s2);border-radius:8px;margin-bottom:10px">
+          <div style="font-size:.74rem;color:var(--muted);margin-bottom:8px">연수생용 QR 코드 — 스캔하면 바로 입장</div>
+          <canvas id="qr-canvas"></canvas>
+        </div>
+
+        <div style="font-size:.74rem;color:var(--muted);line-height:1.6">
+          💡 연수생용 링크로 접속하면 코드 입력 없이 <b>모둠·이름만 선택</b>하면 바로 입장합니다.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cl">📊 실시간 참가 현황</div>
+        <div class="ml" id="i-mlist"><div class="emp"><div class="ic">⏳</div><p style="font-size:.8rem">연수생 대기 중...</p></div></div>
+      </div>
+      <button class="btn btn-p btn-lg btn-f" onclick="tryGo(6)">강사 대시보드로 →</button>
+    </div>
+  </div>
+
+  <!-- 연수생 패널 -->
+  <div id="pt" class="hidden">
+    <div class="card" id="pt-join">
+      <div class="cl">연수생 — 세션 입장</div>
+      <div id="pt-join-link-msg" class="hidden msg mok" style="margin-bottom:10px">🔗 링크로 접속했습니다! 아래에서 모둠과 이름만 선택하세요.</div>
+      <div id="pt-join-code-area">
+        <div class="msg minf">강사님이 알려준 <b>6자리 코드</b> 또는 <b>연수생용 링크</b>로 입장하세요.</div>
+        <label style="margin-top:8px">세션 코드</label>
+        <input type="text" id="jcode" placeholder="ABC123" maxlength="6"
+          style="font-family:'DM Mono',monospace;font-size:1.3rem;text-align:center;text-transform:uppercase;letter-spacing:5px"
+          onkeydown="if(event.key==='Enter')verifyCode()">
+        <button class="btn btn-o btn-f" onclick="verifyCode()">🔍 세션 확인</button>
+      </div>
+      <div id="jcode-err" class="hidden msg merr"></div>
+    </div>
+    <div id="pt-info" class="hidden card" style="background:var(--accent-lt);border-color:#86efac">
+      <div style="font-weight:700;color:var(--accent)" id="pt-sname"></div>
+      <div style="font-size:.76rem;color:var(--muted);margin-top:2px" id="pt-ssub"></div>
+    </div>
+    <div id="pt-form" class="hidden card">
+      <div class="cl">입장 정보 입력</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label>모둠 번호</label>
+          <input type="number" id="tnum" placeholder="예) 3" min="1" max="20" style="text-align:center;font-size:1.1rem;font-weight:700">
+        </div>
+        <div>
+          <label>이름 (닉네임)</label>
+          <input type="text" id="tname" placeholder="예) 김영희">
+        </div>
+      </div>
+      <label>모둠 선택</label>
+      <div class="rg" id="tgrp"></div>
+      <button class="btn btn-p btn-f" onclick="joinSession()">✅ 입장 완료</button>
+    </div>
+    <div id="pt-done" class="hidden card" style="border-color:var(--accent);background:var(--accent-lt)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:1.8rem">🎉</span>
+        <div>
+          <div style="font-weight:700;color:var(--accent)" id="pt-dlabel"></div>
+          <div style="font-size:.76rem;color:var(--muted);margin-top:1px">입장 완료! 실습1-1부터 시작하세요.</div>
+        </div>
+        <button class="btn btn-g btn-sm" style="margin-left:auto" onclick="resetJoin()">다시선택</button>
+      </div>
+      <button class="btn btn-p btn-lg btn-f" style="margin-top:10px" onclick="tryGo(1)">실습1-1 시작 →</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════ PHASE 1: 실습1-1 정성 ═══════════ -->
+<div class="phase" id="p1">
+  <span class="practice-badge pb1">실습 1-1 · 정성 준거로 성취수준 파악하기 [25분]</span>
+  <div class="pt">정성 준거 성취수준 파악하기</div>
+  <div class="pd">학기단위 성취수준 진술문을 읽으며 학생별 정성적 성취수준을 입력합니다.</div>
+
+  <div class="card" style="background:var(--p1l);border-color:#c4b5fd">
+    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--p1);margin-bottom:6px">📝 정성준거 판단 기준</div>
+    <div style="font-size:.8rem;line-height:1.7;color:#3b0764">
+      학기단위 성취수준 준거를 바탕으로, 학생이 교수·학습 과정에서 보이는 수행의 질을 정성적으로 판단합니다.<br>
+      <b>A</b> — 모든 준거를 탁월하게 충족 &nbsp;
+      <b>B</b> — 대부분의 준거를 충족 &nbsp;
+      <b>C</b> — 기본 준거를 충족 &nbsp;
+      <b>D</b> — 일부 준거를 충족 &nbsp;
+      <b>E</b> — 준거 충족 미흡
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+      <div class="cl" style="margin-bottom:0">학생 명렬표 (1~40번) — 정성준거 성취수준 입력</div>
+      <div style="display:flex;gap:5px">
+        <button class="btn btn-g btn-sm" onclick="openFill(1)">일괄입력</button>
+        <button class="btn btn-p btn-sm" onclick="saveP1()">💾 저장</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">
+      <span class="tag" style="background:var(--lvab);color:var(--lva)">A 매우우수</span>
+      <span class="tag" style="background:var(--lvbb);color:var(--lvb)">B 우수</span>
+      <span class="tag" style="background:var(--lvcb);color:var(--lvc)">C 보통</span>
+      <span class="tag" style="background:var(--lvdb);color:var(--lvd)">D 미흡</span>
+      <span class="tag" style="background:var(--lveb);color:var(--lve)">E 매우미흡</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="at"><thead><tr>
+        <th class="l">번호</th>
+        <th style="color:var(--p1)">정성준거 성취수준</th>
+      </tr></thead><tbody id="p1-body"></tbody></table>
+    </div>
+    <div style="margin-top:10px">
+      <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-bottom:3px">
+        <span>입력 진행률</span><span id="p1-pl">0/40</span>
+      </div>
+      <div class="pb-wrap"><div class="pb-fill" id="p1-pf" style="width:0%;background:var(--p1)"></div></div>
+    </div>
+  </div>
+
+  <!-- 토의1 -->
+  <div class="section-divider"><span>토의 1 [10분]</span></div>
+  <div class="card" style="border-color:#c4b5fd">
+    <div class="cl" style="color:var(--p1)">토의 1 · 성찰 작성</div>
+    <div style="font-size:.82rem;color:#3b0764;margin-bottom:10px;line-height:1.6">
+      <b>Q1.</b> 성취수준을 예상하여 기록한 근거는 무엇이었습니까?<br>
+      <b>Q2.</b> 준거참조평가로서, 학기단위 성취수준을 수업의 준거로 삼으려면 어떻게 활용할 수 있을까요?
+    </div>
+    <textarea id="p1-discuss" placeholder="토의 내용을 자유롭게 작성해주세요..."></textarea>
+    <div style="text-align:right;display:flex;gap:6px;justify-content:flex-end">
+      <button class="btn btn-g btn-sm" onclick="saveDraft('p1d')">임시저장</button>
+      <button class="btn btn-p" onclick="saveP1Discuss()">작성완료 · 공유 →</button>
+    </div>
+  </div>
+
+  <div style="text-align:right;margin-top:8px">
+    <button class="btn btn-p" onclick="tryGo(2)">실습1-2 정량 판단으로 →</button>
+  </div>
+</div>
+
+
+<!-- ═══════════ PHASE 2: 실습1-2 정량 ═══════════ -->
+<div class="phase" id="p2">
+  <span class="practice-badge pb2">실습 1-2 · 분할점수로 성취수준 파악하기 [25분]</span>
+  <div class="pt">정량 준거 성취수준 파악하기</div>
+  <div class="pd">정기시험 성적 일람표에서 분할점수를 확인하여 학생별 정량 성취수준을 입력합니다.</div>
+
+  <div class="card" style="background:var(--p2l);border-color:#7dd3fc">
+    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--p2);margin-bottom:6px">📊 분할점수 기준 (고정 분할점수 예시)</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <span class="tag" style="background:var(--lvab);color:var(--lva)">A: 90점 이상</span>
+      <span class="tag" style="background:var(--lvbb);color:var(--lvb)">B: 80~89점</span>
+      <span class="tag" style="background:var(--lvcb);color:var(--lvc)">C: 70~79점</span>
+      <span class="tag" style="background:var(--lvdb);color:var(--lvd)">D: 60~69점</span>
+      <span class="tag" style="background:var(--lveb);color:var(--lve)">E: 40~59점</span>
+    </div>
+    <div style="font-size:.76rem;color:var(--p2);margin-top:8px">※ 실제 분할점수는 본인의 분할점수 산출 내역을 기준으로 적용하세요.</div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+      <div class="cl" style="margin-bottom:0">학생 명렬표 (1~40번) — 정성 + 정량 비교 입력</div>
+      <div style="display:flex;gap:5px">
+        <button class="btn btn-g btn-sm" onclick="openFill(2)">일괄입력</button>
+        <button class="btn btn-p btn-sm" onclick="saveP2()">💾 저장</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="at"><thead><tr>
+        <th class="l">번호</th>
+        <th style="color:var(--p1)">정성준거<br>(실습1-1)</th>
+        <th style="color:var(--p2)">정량준거<br>(분할점수)</th>
+        <th>차이</th>
+      </tr></thead><tbody id="p2-body"></tbody></table>
+    </div>
+    <div style="margin-top:10px">
+      <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-bottom:3px">
+        <span>정량 입력률</span><span id="p2-pl">0/40</span>
+      </div>
+      <div class="pb-wrap"><div class="pb-fill" id="p2-pf" style="width:0%;background:var(--p2)"></div></div>
+    </div>
+  </div>
+
+  <!-- 토의2 -->
+  <div class="section-divider"><span>토의 2 [10분]</span></div>
+  <div class="card" style="border-color:#7dd3fc">
+    <div class="cl" style="color:var(--p2)">토의 2 · 정성-정량 차이 성찰</div>
+    <div style="font-size:.82rem;color:#0c2a4a;margin-bottom:10px;line-height:1.6">
+      <b>Q1.</b> 두 준거로 파악한 성취수준 결과가 다른 이유를 말해 봅시다.<br>
+      <b>Q2.</b> 예상보다 높거나 낮은 성취수준을 보인 학생들의 공통점은 무엇입니까?<br>
+      <b>Q3.</b> 두 준거 성취수준을 일치시키려면 어떤 노력이 필요할까요?
+    </div>
+    <textarea id="p2-discuss" placeholder="정성-정량 차이가 발생한 학생 번호와 그 이유를 중심으로 작성해주세요..."></textarea>
+    <div style="text-align:right;display:flex;gap:6px;justify-content:flex-end">
+      <button class="btn btn-g btn-sm" onclick="saveDraft('p2d')">임시저장</button>
+      <button class="btn btn-p" onclick="saveP2Discuss()">작성완료 · 공유 →</button>
+    </div>
+  </div>
+
+  <div style="text-align:right;margin-top:8px">
+    <button class="btn btn-p" onclick="tryGo(3)">실습2 문항 정답률로 →</button>
+  </div>
+</div>
+
+
+<!-- ═══════════ PHASE 3: 실습2 정답률 ═══════════ -->
+<div class="phase" id="p3">
+  <span class="practice-badge pb3">실습 2 · 문항별 평균 정답률 분석 [25분]</span>
+  <div class="pt">예상 정답률 vs 실제 정답률 비교</div>
+  <div class="pd">출제한 문항별 예상 정답률을 입력하고, NEIS에서 확인한 실제 정답률과 비교합니다.</div>
+
+  <div class="card" style="background:var(--p3l);border-color:#fcd34d">
+    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--p3);margin-bottom:6px">📌 분석 기준</div>
+    <div style="font-size:.8rem;line-height:1.7;color:#451a03">
+      <b>과대평가</b>(예상 &gt; 실제 + 20%p): 예상보다 어려웠던 문항<br>
+      <b>과소평가</b>(실제 &gt; 예상 + 20%p): 예상보다 쉬웠던 문항<br>
+      <b>적정평가</b>(차이 ±20%p 이내): 난이도 예측이 적절한 문항
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+      <div class="cl" style="margin-bottom:0">문항별 정답률 입력</div>
+      <div style="display:flex;gap:5px;align-items:center">
+        <label style="margin:0;font-size:.76rem">문항 수</label>
+        <input type="number" id="item-count" value="10" min="1" max="50" style="width:65px;margin-bottom:0;padding:5px 8px">
+        <button class="btn btn-g btn-sm" onclick="buildItemTable()">적용</button>
+        <button class="btn btn-p btn-sm" onclick="saveP3()">💾 저장</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="irt"><thead><tr>
+        <th>문항</th>
+        <th>예상 정답률(%)</th>
+        <th>실제 정답률(%)</th>
+        <th>차이</th>
+        <th>평가</th>
+      </tr></thead><tbody id="p3-body"></tbody></table>
+    </div>
+  </div>
+
+  <!-- 토의3 -->
+  <div class="section-divider"><span>토의 [15분]</span></div>
+  <div class="card" style="border-color:#fcd34d">
+    <div class="cl" style="color:var(--p3)">토의 · 정답률 차이 분석</div>
+    <div style="font-size:.82rem;color:#451a03;margin-bottom:10px;line-height:1.6">
+      <b>Q1.</b> 문항별 두 가지 정답률의 차이가 무엇을 의미하는지 토의해 봅시다.<br>
+      <b>Q2.</b> 정답률 차이가 가장 많이 발생한 문항을 선정하여 난이도와 문항에 대해 분석해봅시다.
+    </div>
+    <textarea id="p3-discuss" placeholder="정답률 차이가 큰 문항 번호와 그 이유를 중심으로 작성해주세요..."></textarea>
+    <div style="text-align:right;display:flex;gap:6px;justify-content:flex-end">
+      <button class="btn btn-g btn-sm" onclick="saveDraft('p3d')">임시저장</button>
+      <button class="btn btn-p" onclick="saveP3Discuss()">작성완료 · 공유 →</button>
+    </div>
+  </div>
+
+  <div style="text-align:right;margin-top:8px">
+    <button class="btn btn-p" onclick="tryGo(4)">실습3 판별 성취수준으로 →</button>
+  </div>
+</div>
+
+
+<!-- ═══════════ PHASE 4: 실습3 판별수준 ═══════════ -->
+<div class="phase" id="p4">
+  <span class="practice-badge pb3">실습 3 · 목표 성취수준 vs 판별 성취수준 [60분]</span>
+  <div class="pt">문항별 목표 성취수준 입력 및 분석</div>
+  <div class="pd">출제 계획표와 문항정보표를 보며 목표 성취수준을 입력하고, 웹앱으로 확인한 실제 판별 성취수준과 비교합니다.</div>
+
+  <div class="card" style="background:var(--p3l);border-color:#fcd34d">
+    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--p3);margin-bottom:6px">📌 판별 기준</div>
+    <div style="font-size:.8rem;line-height:1.7;color:#451a03">
+      성취수준별 정답률이 <b>약 65% 이상</b>일 때 해당 성취수준을 판별하는 문항으로 판단합니다.<br>
+      웹앱: <span style="font-family:'DM Mono',monospace;font-size:.78rem">kice-se.shinyapps.io/webapp_test/</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+      <div class="cl" style="margin-bottom:0">문항별 목표 성취수준 vs 실제 판별 성취수준</div>
+      <div style="display:flex;gap:5px;align-items:center">
+        <label style="margin:0;font-size:.76rem">문항 수</label>
+        <input type="number" id="item-count2" value="10" min="1" max="50" style="width:65px;margin-bottom:0;padding:5px 8px">
+        <button class="btn btn-g btn-sm" onclick="buildP4Table()">적용</button>
+        <button class="btn btn-p btn-sm" onclick="saveP4()">💾 저장</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="irt"><thead><tr>
+        <th>문항</th>
+        <th style="min-width:140px">성취기준<br><span style="font-weight:400;font-size:.6rem">직접 입력</span></th>
+        <th>목표 성취수준<br><span style="font-weight:400;font-size:.6rem">(출제계획표 기준)</span></th>
+        <th>판별 성취수준<br><span style="font-weight:400;font-size:.6rem">(웹앱 확인)</span></th>
+        <th>일치 여부</th>
+      </tr></thead><tbody id="p4-body"></tbody></table>
+    </div>
+  </div>
+
+  <!-- 성찰 -->
+  <div class="section-divider"><span>성찰 작성 [15분]</span></div>
+  <div class="card" style="border-color:#fcd34d">
+    <div class="cl" style="color:var(--p3)">정기시험 문항 검토 및 교수학습 개선 방향</div>
+    <div style="font-size:.82rem;color:#451a03;margin-bottom:10px;line-height:1.6">
+      목표 성취수준과 실제 판별 성취수준 간 차이가 많이 발생한 문항(1~2개)을 선정하여 분석합니다.<br>
+      <b>Q1.</b> 예상과 실제의 차이가 나타나는 이유를 분석해봅시다.<br>
+      <b>Q2.</b> 교수학습 방법, 평가 도구, 피드백 등 개선 방향을 작성해봅시다.
+    </div>
+    <textarea id="p4-discuss" placeholder="차이가 발생한 문항 번호와 개선 방향을 중심으로 작성해주세요..."></textarea>
+    <div style="text-align:right;display:flex;gap:6px;justify-content:flex-end">
+      <button class="btn btn-g btn-sm" onclick="saveDraft('p4d')">임시저장</button>
+      <button class="btn btn-p" onclick="saveP4Discuss()">작성완료 · 공유 →</button>
+    </div>
+  </div>
+
+  <div style="text-align:right;margin-top:8px">
+    <button class="btn btn-p" onclick="tryGo(5)">실습4 출제계획표로 →</button>
+  </div>
+</div>
+
+
+<!-- ═══════════ PHASE 5: 실습4 출제계획 ═══════════ -->
+<div class="phase" id="p5">
+  <span class="practice-badge pb4">실습 4 · 출제 계획표 작성 및 개선하기 [15분]</span>
+  <div class="pt">출제 계획표 재구성</div>
+  <div class="pd">실습3 결과를 기반으로 성취수준을 고려한 출제 계획표를 재구성합니다.</div>
+
+  <div class="card" style="background:var(--p4l);border-color:#6ee7b7">
+    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--p4);margin-bottom:6px">📌 출제 계획표 재구성 방법</div>
+    <div style="font-size:.8rem;line-height:1.7;color:#064e3b">
+      ① 출제한 시험지·문항정보표·학기단위 성취수준으로 각 문항별 목표 성취수준 정리<br>
+      ② 웹앱으로 판별 성취수준 확인 후 정리<br>
+      ③ 두 계획표를 비교하여 가장 적절했을 출제 계획표 재구성
+    </div>
+  </div>
+
+  <!-- 출제계획표 입력 -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+      <div class="cl" style="margin-bottom:0">개선된 출제 계획표 작성</div>
+      <button class="btn btn-p btn-sm" onclick="saveP5()">💾 저장</button>
+    </div>
+    <div style="font-size:.8rem;color:var(--muted);margin-bottom:10px">성취기준별로 A~E 각 성취수준에 몇 문항씩 배분할지 계획을 작성하세요.</div>
+    <table class="irt" id="p5-table">
+      <thead>
+        <tr>
+          <th class="l" rowspan="3" style="min-width:160px">① 성취기준</th>
+          <th colspan="5" style="background:#fef3c7;color:var(--p3)">② 목표 성취수준</th>
+          <th colspan="5" style="background:#e0f2fe;color:var(--p2)">③ 판별 성취수준</th>
+          <th colspan="5" style="background:#dcfce7;color:var(--lva)">④ 최종 조정</th>
+          <th rowspan="3" style="width:32px"></th>
+        </tr>
+        <tr>
+          <th style="background:#fef3c7;color:var(--p3)">A</th>
+          <th style="background:#fef3c7;color:var(--p3)">B</th>
+          <th style="background:#fef3c7;color:var(--p3)">C</th>
+          <th style="background:#fef3c7;color:var(--p3)">D</th>
+          <th style="background:#fef3c7;color:var(--p3)">E</th>
+          <th style="background:#e0f2fe;color:var(--p2)">A</th>
+          <th style="background:#e0f2fe;color:var(--p2)">B</th>
+          <th style="background:#e0f2fe;color:var(--p2)">C</th>
+          <th style="background:#e0f2fe;color:var(--p2)">D</th>
+          <th style="background:#e0f2fe;color:var(--p2)">E</th>
+          <th style="background:#dcfce7;color:var(--lva)">A</th>
+          <th style="background:#dcfce7;color:var(--lva)">B</th>
+          <th style="background:#dcfce7;color:var(--lva)">C</th>
+          <th style="background:#dcfce7;color:var(--lva)">D</th>
+          <th style="background:#dcfce7;color:var(--lva)">E</th>
+        </tr>
+        <tr style="font-size:.62rem;color:var(--muted)">
+          <td colspan="5" style="padding:3px 6px;background:#fffbeb;text-align:center">실습3 자동반영 · 읽기전용</td>
+          <td colspan="5" style="padding:3px 6px;background:#f0f9ff;text-align:center">실습3 자동반영 · 읽기전용</td>
+          <td colspan="5" style="padding:3px 6px;background:#f0fdf4;text-align:center">직접 입력 · 조정값</td>
+          <td></td>
+        </tr>
+      </thead>
+      <tbody id="p5-body"></tbody>
+    </table>
+    <div style="margin-top:10px;display:flex;gap:6px;align-items:center">
+      <input type="text" id="p5-std" placeholder="성취기준 추가 (예: [10한사1-01-01])" style="margin-bottom:0">
+      <button class="btn btn-g btn-sm" onclick="addStandard()">+ 추가</button>
+    </div>
+  </div>
+
+  <!-- 최종 성찰 -->
+  <div class="section-divider"><span>토의 및 최종 성찰</span></div>
+  <div class="card" style="border-color:#6ee7b7">
+    <div class="cl" style="color:var(--p4)">최종 토의 · 출제 계획 개선 성찰</div>
+    <div style="font-size:.82rem;color:#064e3b;margin-bottom:10px;line-height:1.6">
+      <b>Q1.</b> 기존 출제 계획표에서 무엇을, 왜 바꾸어야 할까요?<br>
+      <b>Q2.</b> 성취수준을 고려한 출제 계획이 왜 중요한지 논의해봅시다.
+    </div>
+    <textarea id="p5-discuss" placeholder="최종 성찰 내용을 작성해주세요..."></textarea>
+    <div style="text-align:right;display:flex;gap:6px;justify-content:flex-end">
+      <button class="btn btn-g btn-sm" onclick="saveDraft('p5d')">임시저장</button>
+      <button class="btn btn-p" onclick="saveP5Discuss()">작성완료 · 공유 →</button>
+    </div>
+  </div>
+
+  <div class="nb">
+    <div><h3>🎉 전체 실습 완료!</h3><p>수고하셨습니다. 강사 대시보드에서 전체 결과를 확인하세요.</p></div>
+    <button class="btn" style="background:#fff;color:var(--accent);font-weight:700;padding:9px 18px" onclick="tryGo(6)">전체 결과 보기 →</button>
+  </div>
+</div>
+
+
+<!-- ═══════════ PHASE 6: 강사 대시보드 ═══════════ -->
+<div class="phase" id="p6">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+    <div><div class="pt">강사 대시보드</div><div class="pd" style="margin-bottom:0">모든 연수생의 실시간 입력 현황과 토의 내용을 확인합니다.</div></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:#22c55e;font-weight:600">
+        <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;animation:pulse 1.5s infinite"></span>
+        실시간 반영 중
+      </span>
+      <button class="btn btn-ghost btn-sm" onclick="openExportModal()" style="display:flex;align-items:center;gap:5px">
+        📊 구글 시트로 내보내기
+      </button>
+    </div>
+  </div>
+
+  <!-- 참가 현황 -->
+  <div class="sr" id="dash-stats"></div>
+
+  <!-- 실습별 탭 -->
+  <div class="tabs" style="margin-bottom:16px">
+    <button class="tab active" id="dt-0" onclick="setDashTab(0)">참가현황</button>
+    <button class="tab" id="dt-1" onclick="setDashTab(1)">실습1-1</button>
+    <button class="tab" id="dt-2" onclick="setDashTab(2)">실습1-2</button>
+    <button class="tab" id="dt-3" onclick="setDashTab(3)">실습2 정답률</button>
+    <button class="tab" id="dt-4" onclick="setDashTab(4)">실습3</button>
+    <button class="tab" id="dt-5" onclick="setDashTab(5)">실습4</button>
+  </div>
+
+  <div id="dash-content"></div>
+</div>
+
+</div><!-- /wrap -->
+
+<!-- Export Modal -->
+<div class="modal-bg" id="export-modal">
+  <div class="modal-box" style="width:380px">
+    <div style="font-weight:700;font-size:1rem;margin-bottom:6px">📊 구글 시트로 내보내기</div>
+    <div style="font-size:.8rem;color:var(--muted);margin-bottom:14px;line-height:1.6">
+      현재 세션의 모든 데이터를 구글 시트로 내보냅니다.<br>
+      실습별로 시트가 자동 생성됩니다.
+    </div>
+    <label>Apps Script 웹앱 URL</label>
+    <input type="text" id="export-url-input" placeholder="https://script.google.com/macros/s/.../exec"
+      style="font-size:.78rem;margin-bottom:6px">
+    <div style="font-size:.72rem;color:var(--muted);margin-bottom:14px">
+      💡 Apps Script 코드를 구글 시트에 붙여넣고 배포하면 URL이 생성됩니다.
+    </div>
+    <div id="export-status" style="display:none" class="msg mok">✅ 내보내기 완료! 구글 시트를 확인하세요.</div>
+    <div id="export-err" style="display:none" class="msg merr"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-ghost btn-sm" onclick="closeExportModal()">취소</button>
+      <button class="btn btn-p btn-sm" id="export-btn" onclick="doExport()">📤 내보내기</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Fill Modal -->
+<div class="modal-bg" id="fill-modal">
+  <div class="modal-box">
+    <div style="font-weight:700;margin-bottom:12px">일괄 입력</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <div style="flex:1" id="fill-range-wrap">
+        <label>범위</label>
+        <select id="fr" style="margin-bottom:0">
+          <option value="s1">정성준거만</option>
+          <option value="s2">정량준거만</option>
+          <option value="both">정성+정량 모두</option>
+        </select>
+      </div>
+      <div style="flex:1"><label>수준</label>
+        <select id="fl" style="margin-bottom:0">
+          <option value="">선택</option>
+          <option>A</option><option>B</option><option>C</option><option>D</option><option>E</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;justify-content:flex-end">
+      <button class="btn btn-g btn-sm" onclick="closeFill()">취소</button>
+      <button class="btn btn-p btn-sm" onclick="applyFill()">적용</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   STATE & HELPERS
+══════════════════════════════════════════ */
+let SESSION=null, ME=null, CODE=null;
+let localP1={}, localP2={}, localP3={}, localP4={};
+let localP5Standards=[], fillPhase=1, dashTab=0;
+let dbReady=false;
+const LV={A:0,B:1,C:2,D:3,E:4};
+
+function makeCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return Array.from({length:6},()=>c[Math.floor(Math.random()*c.length)]).join('');}
+function uid(){return Math.random().toString(36).slice(2,9);}
+function toast(msg,d=2200){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),d);}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
+
+// DB 준비 대기
+document.addEventListener('db-ready',()=>{dbReady=true;init();});
+
+async function dbSet(path,data){if(!dbReady)return;await window.DB.set(path,data);}
+async function dbGet(path){if(!dbReady)return null;return await window.DB.get(path);}
+async function dbUpdate(path,data){if(!dbReady)return;await window.DB.update(path,data);}
+function dbOn(path,cb){if(!dbReady){document.addEventListener('db-ready',()=>window.DB.on(path,cb));return;}window.DB.on(path,cb);}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+async function init(){
+  // ── URL 파라미터 처리 ──
+  const params = new URLSearchParams(window.location.search);
+  const urlRole = params.get('role');   // 'instructor' or 'student'
+  const urlCode = params.get('code');   // 세션 코드
+
+  // 강사용 링크로 접속
+  if(urlRole==='instructor' && urlCode){
+    const sess = await dbGet('sessions/'+urlCode.toUpperCase());
+    if(sess){
+      SESSION=sess; CODE=urlCode.toUpperCase();
+      updateBadges();
+      // 강사 탭으로 바로 이동 + 세션 복원
+      setTab('i');
+      document.getElementById('show-code').textContent=CODE;
+      setLinks(CODE);
+      document.getElementById('pi-done').classList.remove('hidden');
+      const piNewEl2 = document.getElementById('pi-new');
+      if(piNewEl2) piNewEl2.style.display='none';
+      setTimeout(()=>{ toast('✅ 강사 세션 복원: '+CODE); tryGo(6); }, 300);
+      return;
+    }
+  }
+
+  // 연수생용 링크로 접속
+  if(urlRole==='student' && urlCode){
+    const sess = await dbGet('sessions/'+urlCode.toUpperCase());
+    if(sess){
+      SESSION=sess; vCode=urlCode.toUpperCase();
+      setTab('t');
+      // 코드 입력 칸 숨기고 링크 접속 안내 표시
+      document.getElementById('pt-join-code-area').classList.add('hidden');
+      document.getElementById('pt-join-link-msg').classList.remove('hidden');
+      // 모둠 선택 바로 표시
+      document.getElementById('pt-sname').textContent=sess.name;
+      document.getElementById('pt-ssub').textContent=sess.groups.length+'개 모둠';
+      document.getElementById('pt-info').classList.remove('hidden');
+      document.getElementById('tgrp').innerHTML=sess.groups.map(g=>`<div class="rc" id="gb-${g.id}" onclick="selGF('${g.id}','${g.name}',${g.colorIdx})"><div class="em">👥</div><div class="rn">${g.name}</div></div>`).join('');
+      document.getElementById('pt-form').classList.remove('hidden');
+      toast('🔗 링크로 접속! 모둠과 이름을 선택하세요.', 2500);
+      return;
+    }
+  }
+
+  // ── 기존 localStorage 자동 복원 ──
+  // URL 파라미터가 있으면 복원 안 함
+  if(urlRole) return;
+
+  const saved=lsGet('my_id_v2');
+  if(saved){
+    const sess=await dbGet('sessions/'+saved.code);
+    if(sess){
+      SESSION=sess;ME=saved;CODE=saved.code;
+      updateBadges();await renderTrDone();setTab('t');
+      const existing=await dbGet('entries/'+saved.code+'/'+saved.memberKey);
+      if(existing){
+        let lastPhase=1;
+        if(existing.p1)lastPhase=1;
+        if(existing.p2)lastPhase=2;
+        if(existing.p3)lastPhase=3;
+        if(existing.p4)lastPhase=4;
+        if(existing.p5)lastPhase=5;
+        setTimeout(()=>{
+          toast('✅ 자동 재접속 완료! 이전 작업이 유지됩니다.', 2500);
+          goP(lastPhase);
+        }, 400);
+      }
+    } else {
+      clearAllLocalData();
+    }
+  }
+  // 임시저장 복원
+  if(ME){
+    ['p1d','p2d','p3d','p4d','p5d'].forEach(k=>{
+      const draft=lsGet(k+'_'+ME.code);
+      const map={p1d:'p1-discuss',p2d:'p2-discuss',p3d:'p3-discuss',p4d:'p4-discuss',p5d:'p5-discuss'};
+      if(draft&&document.getElementById(map[k]))document.getElementById(map[k]).value=draft;
+    });
+  }
+}
+
+/* ══════════════════════════════════════════
+   EXPORT TO GOOGLE SHEETS
+══════════════════════════════════════════ */
+const EXPORT_URL_KEY = 'export_script_url';
+
+function openExportModal(){
+  const saved = localStorage.getItem(EXPORT_URL_KEY);
+  if(saved) document.getElementById('export-url-input').value = saved;
+  document.getElementById('export-status').style.display='none';
+  document.getElementById('export-err').style.display='none';
+  document.getElementById('export-modal').classList.add('open');
+}
+function closeExportModal(){
+  document.getElementById('export-modal').classList.remove('open');
+}
+
+async function doExport(){
+  const url = document.getElementById('export-url-input').value.trim();
+  if(!url){ alert('Apps Script URL을 입력해주세요.'); return; }
+
+  const btn = document.getElementById('export-btn');
+  const statusEl = document.getElementById('export-status');
+  const errEl = document.getElementById('export-err');
+  statusEl.style.display='none';
+  errEl.style.display='none';
+  btn.textContent='⏳ 내보내는 중...';
+  btn.disabled=true;
+
+  // URL 저장
+  localStorage.setItem(EXPORT_URL_KEY, url);
+
+  try {
+    const activeCode = CODE || SESSION?.code;
+    if(!activeCode){ throw new Error('세션이 없습니다. 강사 탭에서 세션을 먼저 생성하세요.'); }
+
+    // Firebase에서 전체 데이터 가져오기
+    const [members, entries, discusses] = await Promise.all([
+      dbGet('members/' + activeCode),
+      dbGet('entries/' + activeCode),
+      dbGet('discusses/' + activeCode)
+    ]);
+
+    const mList = members ? Object.values(members) : [];
+
+    const payload = {
+      action: 'export',
+      sessionName: SESSION?.name || activeCode,
+      members: mList,
+      entries: entries || {},
+      discusses: discusses || {}
+    };
+
+    const res = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+
+    if(result.ok){
+      statusEl.style.display='block';
+      statusEl.textContent='✅ ' + (result.message || '내보내기 완료! 구글 시트를 확인하세요.');
+      toast('✅ 구글 시트 내보내기 완료!');
+    } else {
+      throw new Error(result.error || '내보내기 실패');
+    }
+  } catch(e) {
+    errEl.style.display='block';
+    errEl.textContent='❌ 오류: ' + e.message;
+    toast('❌ 내보내기 실패', 3000);
+  } finally {
+    btn.textContent='📤 내보내기';
+    btn.disabled=false;
+  }
+}
+
+function clearAllLocalData(){
+  lsSet('my_id_v2',null);
+  ['p1d','p2d','p3d','p4d','p5d'].forEach(k=>localStorage.removeItem(k));
+  ME=null;SESSION=null;CODE=null;
+}
+
+/* ══════════════════════════════════════════
+   NAV
+══════════════════════════════════════════ */
+/* ── 강사 서브 탭 ── */
+function setITab(t){
+  const isNew = t === 'new';
+  const ni = document.getElementById('itab-new');
+  const li = document.getElementById('itab-load');
+  ni.style.background    = isNew ? 'var(--surface)' : 'transparent';
+  ni.style.color         = isNew ? 'var(--accent)' : 'var(--muted)';
+  ni.style.fontWeight    = isNew ? '700' : '600';
+  ni.style.boxShadow     = isNew ? '0 1px 4px rgba(0,0,0,.1)' : 'none';
+  li.style.background    = !isNew ? 'var(--surface)' : 'transparent';
+  li.style.color         = !isNew ? 'var(--accent)' : 'var(--muted)';
+  li.style.fontWeight    = !isNew ? '700' : '600';
+  li.style.boxShadow     = !isNew ? '0 1px 4px rgba(0,0,0,.1)' : 'none';
+  document.getElementById('pi-new').classList.toggle('hidden', !isNew);
+  document.getElementById('pi-load').classList.toggle('hidden', isNew);
+}
+
+/* ── 기존 세션 불러오기 ── */
+async function loadSession(){
+  resetDash();
+  const raw = document.getElementById('load-code').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const errEl = document.getElementById('load-err');
+  errEl.classList.add('hidden');
+
+  if(raw.length !== 6){
+    errEl.textContent = '6자리 코드를 입력해주세요.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+  toast('⏳ 세션 불러오는 중...', 4000);
+
+  const sess = await dbGet('sessions/' + raw);
+  if(!sess){
+    errEl.textContent = '❌ 존재하지 않는 세션 코드입니다.';
+    errEl.classList.remove('hidden');
+    toast('');
+    return;
+  }
+
+  // 세션 복원
+  SESSION = sess;
+  CODE = raw;
+  updateBadges();
+
+  // UI 업데이트
+  document.getElementById('loaded-name').textContent = sess.name;
+  document.getElementById('loaded-code').textContent = raw;
+  document.getElementById('loaded-sub').textContent =
+    `${sess.groups?.length || 0}개 모둠 · 생성: ${new Date(sess.createdAt).toLocaleDateString('ko-KR')}`;
+  document.getElementById('pi-loaded').classList.remove('hidden');
+
+  // 참가자 불러오기
+  const members = await dbGet('members/' + raw) || {};
+  const mList = Object.values(members).sort((a,b)=>{
+    const ga=parseInt(a.groupName)||0, gb=parseInt(b.groupName)||0;
+    return ga!==gb ? ga-gb : (a.num||0)-(b.num||0);
+  });
+  const el = document.getElementById('loaded-mlist');
+  if(!mList.length){
+    el.innerHTML = '<div class="emp" style="padding:16px"><p style="font-size:.82rem">참가자 없음</p></div>';
+  } else {
+    el.innerHTML = mList.map((m,i)=>`
+      <div class="mi">
+        <div class="mav bg${m.groupIdx||i%6}">${m.num||'?'}</div>
+        <div>
+          <div style="font-weight:600">${m.name}</div>
+          <div style="font-size:.7rem;color:var(--muted)">${m.groupName} ${m.num||'?'}번</div>
+        </div>
+      </div>`).join('');
+  }
+
+  toast('✅ 세션 불러오기 완료! — ' + sess.name);
+}
+
+function setTab(t){
+  const ii=t==='i';
+  ['i','t'].forEach(x=>{
+    const btn=document.getElementById('tab-'+x);
+    if(btn){btn.style.background=x===t?'var(--surface)':'transparent';btn.style.color=x===t?'var(--accent)':'var(--muted)';btn.style.fontWeight=x===t?'700':'600';btn.style.boxShadow=x===t?'0 1px 4px rgba(0,0,0,.1)':'none';btn.classList.toggle('active',x===t);}
+  });
+  document.getElementById('pi').classList.toggle('hidden',!ii);
+  document.getElementById('pt').classList.toggle('hidden',ii);
+}
+
+function tryGo(n){
+  if(n>0&&n<6&&!SESSION){toast('강사님이 세션을 먼저 열어야 합니다.');return;}
+  if(n>0&&n<6&&!ME){toast('먼저 입장해주세요.');return;}
+  goP(n);
+}
+function goP(n){
+  document.querySelectorAll('.phase').forEach(p=>p.classList.remove('active'));
+  document.getElementById('p'+n).classList.add('active');
+  document.querySelectorAll('.si').forEach((s,i)=>{s.classList.remove('active','done');if(i<n)s.classList.add('done');else if(i===n)s.classList.add('active');});
+  if(n===1)initP1();
+  if(n===2)initP2();
+  if(n===3)buildItemTable();
+  if(n===4)buildP4Table();
+  if(n===5)initP5();
+  if(n===6)refreshDash();
+}
+function updateBadges(){
+  const tc=document.getElementById('tb-code'),tr=document.getElementById('tb-role');
+  if(CODE){tc.classList.remove('hidden');tc.textContent=CODE;}
+  tr.textContent=ME?`${ME.groupName} ${ME.num||''}번 · ${ME.name}`:'미입장';
+}
+
+/* ══════════════════════════════════════════
+   PHASE 0 — 세션 / 입장
+══════════════════════════════════════════ */
+async function createSession(){
+  if(!dbReady){toast('❌ Firebase가 연결되지 않았습니다. 설정을 확인해주세요.',4000);return;}
+  resetDash();
+  const name=document.getElementById('sn').value.trim()||'연수 세션';
+  const gc=parseInt(document.getElementById('sgc').value)||4;
+  const mc=parseInt(document.getElementById('smc').value)||4;
+  let code;
+  for(let i=0;i<10;i++){code=makeCode();const ex=await dbGet('sessions/'+code);if(!ex)break;}
+  const groups=Array.from({length:gc},(_,i)=>({id:'g'+(i+1),name:(i+1)+'모둠',colorIdx:i%6,capacity:mc}));
+  SESSION={code,name,groups,createdAt:Date.now()};
+  await dbSet('sessions/'+code,SESSION);
+  CODE=code;
+  document.getElementById('show-code').textContent=code;
+  setLinks(code);
+  document.getElementById('pi-done').classList.remove('hidden');
+  // 새 세션 만들기 폼 숨기기
+  const piNewEl = document.getElementById('pi-new');
+  if(piNewEl) piNewEl.style.display='none';
+  updateBadges();
+  toast('✅ 세션 생성! 링크를 연수생에게 공유하세요.', 3000);
+  // 실시간 참가 현황 구독
+  dbOn('members/'+code,members=>{
+    const list=members?Object.values(members).sort((a,b)=>a.ts-b.ts):[];
+    const el=document.getElementById('i-mlist');
+    if(!list.length){el.innerHTML='<div class="emp"><div class="ic">⏳</div><p style="font-size:.8rem">연수생 대기 중...</p></div>';return;}
+    el.innerHTML=list.map((m,i)=>`<div class="mi"><div class="mav bg${m.groupIdx||i%6}">${m.name[0]}</div><div><div style="font-weight:600">${m.name}</div><div style="font-size:.7rem;color:var(--muted)">${m.groupName}</div></div></div>`).join('');
+  });
+}
+function getBaseURL(){
+  return window.location.origin + window.location.pathname;
+}
+function setLinks(code){
+  const base = getBaseURL();
+  const instLink = base+'?role=instructor&code='+code;
+  const stuLink  = base+'?role=student&code='+code;
+  const el1=document.getElementById('link-instructor');
+  const el2=document.getElementById('link-student');
+  if(el1) el1.textContent=instLink;
+  if(el2) el2.textContent=stuLink;
+}
+function copyLink(role){
+  const base=getBaseURL();
+  const link=base+'?role='+role+'&code='+CODE;
+  navigator.clipboard.writeText(link)
+    .then(()=>toast('📋 '+(role==='instructor'?'강사':'연수생')+'용 링크 복사!'))
+    .catch(()=>toast('링크: '+link,3000));
+}
+function openLink(role){
+  const base=getBaseURL();
+  window.open(base+'?role='+role+'&code='+CODE,'_blank');
+}
+function showQR(){
+  const area=document.getElementById('qr-area');
+  area.classList.toggle('hidden');
+  if(!area.classList.contains('hidden')){
+    const link=getBaseURL()+'?role=student&code='+CODE;
+    // QR 라이브러리 동적 로드
+    if(!window.QRCode){
+      const script=document.createElement('script');
+      script.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+      script.onload=()=>drawQR(link);
+      document.head.appendChild(script);
+    } else {
+      drawQR(link);
+    }
+  }
+}
+function drawQR(text){
+  const canvas=document.getElementById('qr-canvas');
+  canvas.innerHTML='';
+  try {
+    new QRCode(canvas,{text,width:180,height:180,colorDark:'#1e3a5f',colorLight:'#ffffff'});
+  } catch(e){
+    canvas.textContent='QR 생성 오류: '+e.message;
+  }
+}
+function copyCode(){if(!CODE)return;copyLink('student');}
+
+let selG=null, vCode=null;
+async function verifyCode(){
+  const raw=document.getElementById('jcode').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const errEl=document.getElementById('jcode-err');errEl.classList.add('hidden');
+  if(raw.length!==6){errEl.textContent='6자리 코드를 입력해주세요.';errEl.classList.remove('hidden');return;}
+  if(!dbReady){errEl.textContent='Firebase 연결 오류';errEl.classList.remove('hidden');return;}
+  toast('⏳ 확인 중...',3000);
+  const sess=await dbGet('sessions/'+raw);
+  if(!sess){errEl.textContent='❌ 존재하지 않는 세션 코드입니다.';errEl.classList.remove('hidden');toast('');return;}
+  SESSION=sess;vCode=raw;
+  document.getElementById('pt-sname').textContent=sess.name;
+  document.getElementById('pt-ssub').textContent=sess.groups.length+'개 모둠 · 코드: '+raw;
+  document.getElementById('pt-info').classList.remove('hidden');
+  document.getElementById('pt-join').style.display='none';
+  document.getElementById('tgrp').innerHTML=sess.groups.map(g=>`<div class="rc" id="gb-${g.id}" onclick="selGF('${g.id}','${g.name}',${g.colorIdx})"><div class="em">👥</div><div class="rn c${g.colorIdx}">${g.name}</div></div>`).join('');
+  document.getElementById('pt-form').classList.remove('hidden');
+  updateBadges();toast('✅ 세션 확인: '+sess.name);
+}
+function selGF(id,name,ci){selG={id,name,ci};document.querySelectorAll('[id^="gb-"]').forEach(el=>el.classList.remove('sel'));document.getElementById('gb-'+id)?.classList.add('sel');}
+async function joinSession(){
+  const num  = document.getElementById('tnum').value.trim();
+  const name = document.getElementById('tname').value.trim();
+  if(!num)  { alert('모둠 번호를 입력해주세요.'); return; }
+  if(!name) { alert('이름(닉네임)을 입력해주세요.'); return; }
+  if(!selG) { alert('모둠을 선택해주세요.'); return; }
+  CODE = vCode;
+  const mk = selG.id+'_'+num+'_'+name;
+  ME = { name, num:parseInt(num), groupId:selG.id, groupName:selG.name, groupIdx:selG.ci, memberKey:mk, code:CODE };
+  lsSet('my_id_v2', ME);
+
+  // 기존 데이터 확인 (재입장 여부 판단)
+  const existing = await dbGet('entries/'+CODE+'/'+mk);
+  const isRejoining = !!existing;
+
+  // Firebase members 업데이트
+  await dbSet('members/'+CODE+'/'+mk, {
+    name, num:parseInt(num), groupId:selG.id, groupName:selG.name, groupIdx:selG.ci, memberKey:mk, ts:Date.now()
+  });
+
+  await renderTrDone(); updateBadges();
+
+  if(isRejoining){
+    // 재입장: 이전 실습 내용 자동 복원 + 마지막 실습 위치로 이동
+    const restored=[];
+    let lastPhase=1;
+    if(existing.p1){restored.push('실습1-1');lastPhase=1;}
+    if(existing.p2){restored.push('실습1-2');lastPhase=2;}
+    if(existing.p3){restored.push('실습2');lastPhase=3;}
+    if(existing.p4){restored.push('실습3');lastPhase=4;}
+    if(existing.p5){restored.push('실습4');lastPhase=5;}
+    toast('✅ 재입장 완료! 이전 작업이 유지됩니다.', 3000);
+    if(restored.length){
+      setTimeout(()=>{
+        toast('📂 복원: '+restored.join(', ')+' → 이어서 진행하세요!', 3500);
+        goP(lastPhase);
+      }, 800);
+    }
+  } else {
+    toast('✅ '+selG.name+' '+num+'번 · '+name+' 입장!');
+  }
+}
+async function renderTrDone(){
+  if(!ME)return;
+  document.getElementById('pt-form').classList.add('hidden');
+  document.getElementById('pt-info').classList.remove('hidden');
+  document.getElementById('pt-done').classList.remove('hidden');
+  document.getElementById('pt-dlabel').textContent=`${ME.groupName} ${ME.num}번 · ${ME.name} 님 입장 완료!`;
+}
+function resetJoin(){
+  clearAllLocalData();
+  document.getElementById('pt-join').style.display='';
+  ['pt-info','pt-form','pt-done'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById('jcode').value='';
+  updateBadges();
+}
+
+/* ══════════════════════════════════════════
+   PHASE 1 — 실습1-1 정성
+══════════════════════════════════════════ */
+async function initP1(){
+  const saved=await dbGet('entries/'+CODE+'/'+ME.memberKey+'/p1')||{};
+  for(let i=1;i<=40;i++)localP1[i]=saved[i]||'';
+  let rows='';
+  for(let i=1;i<=40;i++){
+    const v=localP1[i];
+    rows+=`<tr><td class="num">${i}</td>
+      <td><select class="lv l${v||'_'}" id="p1s-${i}" onchange="onP1(${i},this)">
+        <option value="">-</option>${['A','B','C','D','E'].map(l=>`<option ${v===l?'selected':''}>${l}</option>`).join('')}
+      </select></td></tr>`;
+  }
+  document.getElementById('p1-body').innerHTML=rows;
+  updateP1Prog();
+  // 임시저장 복원
+  const d=lsGet('p1d_'+(ME?.code||''));if(d)document.getElementById('p1-discuss').value=d;
+}
+function onP1(n,sel){sel.className=`lv l${sel.value||'_'}`;localP1[n]=sel.value;updateP1Prog();}
+function updateP1Prog(){let f=Object.values(localP1).filter(v=>v).length;document.getElementById('p1-pl').textContent=f+'/40';document.getElementById('p1-pf').style.width=Math.round(f/40*100)+'%';}
+async function saveP1(){
+  for(let i=1;i<=40;i++){const s=document.getElementById('p1s-'+i);if(s)localP1[i]=s.value;}
+  await dbSet('entries/'+CODE+'/'+ME.memberKey+'/p1',localP1);
+  await dbSet('entries/'+CODE+'/'+ME.memberKey+'/meta',{name:ME.name,groupName:ME.groupName,groupIdx:ME.groupIdx});
+  updateP1Prog();
+  toast('✅ 실습1-1 저장 완료! 실습1-2로 넘어가면 자동 연동됩니다.');
+}
+async function saveP1Discuss(){
+  const text=document.getElementById('p1-discuss').value.trim();
+  if(!text){alert('토의 내용을 작성해주세요.');return;}
+  await dbSet('discusses/'+CODE+'/'+ME.memberKey+'/p1',{name:ME.name,num:ME.num||0,groupName:ME.groupName,groupIdx:ME.groupIdx,text,ts:Date.now()});
+  lsSet('p1d_'+(ME?.code||''),text);toast('✅ 실습1-1 토의 공유 완료!');
+}
+
+/* ══════════════════════════════════════════
+   PHASE 2 — 실습1-2 정량
+══════════════════════════════════════════ */
+async function initP2(){
+  // Firebase에서 p1, p2 모두 최신값으로 다시 로드
+  const [savedP1, savedP2] = await Promise.all([
+    dbGet('entries/'+CODE+'/'+ME.memberKey+'/p1'),
+    dbGet('entries/'+CODE+'/'+ME.memberKey+'/p2')
+  ]);
+  for(let i=1;i<=40;i++){
+    localP1[i]=(savedP1||{})[i]||'';
+    localP2[i]=(savedP2||{})[i]||'';
+  }
+
+  let rows='';
+  for(let i=1;i<=40;i++){
+    const s1=localP1[i]||'';
+    const s2=localP2[i];
+    const diff=s1&&s2?getDiff(s1,s2):'';
+    rows+=`<tr><td class="num">${i}</td>
+      <td style="text-align:center">
+        ${s1
+          ? `<div class="lb b${s1}">${s1}</div>`
+          : `<span style="font-size:.72rem;color:var(--muted)">미입력</span>`
+        }
+      </td>
+      <td><select class="lv l${s2||'_'}" id="p2s-${i}" onchange="onP2(${i},this)">
+        <option value="">-</option>${['A','B','C','D','E'].map(l=>`<option ${s2===l?'selected':''}>${l}</option>`).join('')}
+      </select></td>
+      <td id="diff-${i}">${diff}</td></tr>`;
+  }
+  document.getElementById('p2-body').innerHTML=rows;
+  updateP2Prog();
+  const d=lsGet('p2d_'+(ME?.code||''));if(d)document.getElementById('p2-discuss').value=d;
+}
+function getDiff(s1,s2){
+  if(!s1||!s2||s1==='–')return '';
+  const d=LV[s2]-LV[s1];
+  if(d===0)return '<span style="color:#22c55e;font-size:.8rem">일치</span>';
+  return d>0?`<span style="color:#ef4444;font-size:.8rem">↓${Math.abs(d)}단계</span>`:`<span style="color:#1d4ed8;font-size:.8rem">↑${Math.abs(d)}단계</span>`;
+}
+function onP2(n,sel){
+  sel.className=`lv l${sel.value||'_'}`;localP2[n]=sel.value;
+  const diffEl=document.getElementById('diff-'+n);
+  if(diffEl)diffEl.innerHTML=getDiff(localP1[n]||'',sel.value);
+  updateP2Prog();
+}
+function updateP2Prog(){let f=Object.values(localP2).filter(v=>v).length;document.getElementById('p2-pl').textContent=f+'/40';document.getElementById('p2-pf').style.width=Math.round(f/40*100)+'%';}
+async function saveP2(){
+  for(let i=1;i<=40;i++){const s=document.getElementById('p2s-'+i);if(s)localP2[i]=s.value;}
+  // p1도 함께 최신값으로 저장 (대시보드 비교용)
+  await Promise.all([
+    dbSet('entries/'+CODE+'/'+ME.memberKey+'/p2',localP2),
+    dbSet('entries/'+CODE+'/'+ME.memberKey+'/p1',localP1)
+  ]);
+  updateP2Prog();toast('✅ 실습1-2 저장 완료!');
+}
+async function saveP2Discuss(){
+  const text=document.getElementById('p2-discuss').value.trim();
+  if(!text){alert('토의 내용을 작성해주세요.');return;}
+  await dbSet('discusses/'+CODE+'/'+ME.memberKey+'/p2',{name:ME.name,num:ME.num||0,groupName:ME.groupName,groupIdx:ME.groupIdx,text,ts:Date.now()});
+  lsSet('p2d_'+(ME?.code||''),text);toast('✅ 실습1-2 토의 공유 완료!');
+}
+
+/* ══════════════════════════════════════════
+   PHASE 3 — 실습2 정답률
+══════════════════════════════════════════ */
+function buildItemTable(){
+  const n=parseInt(document.getElementById('item-count').value)||10;
+  let rows='';
+  for(let i=1;i<=n;i++){
+    const d=localP3[i]||{exp:'',act:''};
+    rows+=`<tr>
+      <td style="font-family:'DM Mono';font-size:.82rem">${i}번</td>
+      <td><input type="number" id="p3e-${i}" value="${d.exp}" min="0" max="100" placeholder="%" onchange="calcDiff3(${i})" style="width:70px;text-align:center;margin-bottom:0;padding:4px 6px"></td>
+      <td><input type="number" id="p3a-${i}" value="${d.act}" min="0" max="100" placeholder="%" onchange="calcDiff3(${i})" style="width:70px;text-align:center;margin-bottom:0;padding:4px 6px"></td>
+      <td id="p3d-${i}">-</td>
+      <td id="p3r-${i}">-</td>
+    </tr>`;
+  }
+  document.getElementById('p3-body').innerHTML=rows;
+  for(let i=1;i<=n;i++)if(d&&(localP3[i]?.exp||localP3[i]?.act))calcDiff3(i);
+  const d=lsGet('p3d_'+(ME?.code||''));if(d)document.getElementById('p3-discuss').value=d;
+}
+function calcDiff3(i){
+  const e=parseFloat(document.getElementById('p3e-'+i)?.value)||0;
+  const a=parseFloat(document.getElementById('p3a-'+i)?.value)||0;
+  const diff=a-e;
+  const dEl=document.getElementById('p3d-'+i);
+  const rEl=document.getElementById('p3r-'+i);
+  if(dEl)dEl.innerHTML=`<span class="${diff>0?'ok':diff<0?'over':''}">${diff>=0?'+':''}${diff.toFixed(1)}%p</span>`;
+  if(rEl){
+    let label='',cls='';
+    if(Math.abs(diff)<=20){label='적정평가';cls='ok';}
+    else if(diff<-20){label='과대평가';cls='over';}
+    else{label='과소평가';cls='under';}
+    rEl.innerHTML=`<span class="${cls}">${label}</span>`;
+  }
+  localP3[i]={exp:e,act:a};
+}
+async function saveP3(){
+  const n=parseInt(document.getElementById('item-count').value)||10;
+  for(let i=1;i<=n;i++){localP3[i]={exp:parseFloat(document.getElementById('p3e-'+i)?.value)||0,act:parseFloat(document.getElementById('p3a-'+i)?.value)||0};}
+  await dbSet('entries/'+CODE+'/'+ME.memberKey+'/p3',localP3);
+  toast('✅ 실습2 저장!');
+}
+async function saveP3Discuss(){
+  const text=document.getElementById('p3-discuss').value.trim();
+  if(!text){alert('토의 내용을 작성해주세요.');return;}
+  await dbSet('discusses/'+CODE+'/'+ME.memberKey+'/p3',{name:ME.name,num:ME.num||0,groupName:ME.groupName,groupIdx:ME.groupIdx,text,ts:Date.now()});
+  lsSet('p3d_'+(ME?.code||''),text);toast('✅ 실습2 토의 공유 완료!');
+}
+
+/* ══════════════════════════════════════════
+   PHASE 4 — 실습3 판별수준
+══════════════════════════════════════════ */
+function buildP4Table(){
+  const n=parseInt(document.getElementById('item-count2').value)||10;
+  let rows='';
+  for(let i=1;i<=n;i++){
+    const d=localP4[i]||{std:'',target:'',actual:''};
+    rows+=`<tr>
+      <td style="font-family:'DM Mono';font-size:.82rem;text-align:center">${i}번</td>
+      <td>
+        <input type="text" id="p4std-${i}" value="${d.std||''}" placeholder="예) [10한사1-01-01]"
+          style="margin-bottom:0;padding:4px 8px;font-size:.78rem;min-width:130px"
+          onchange="onP4(${i})">
+      </td>
+      <td><select class="lv l${d.target||'_'}" id="p4t-${i}" onchange="onP4(${i})">
+        <option value="">-</option>${['A','B','C','D','E'].map(l=>`<option ${d.target===l?'selected':''}>${l}</option>`).join('')}
+      </select></td>
+      <td><select class="lv l${d.actual||'_'}" id="p4a-${i}" onchange="onP4(${i})">
+        <option value="">-</option>${['A','B','C','D','E'].map(l=>`<option ${d.actual===l?'selected':''}>${l}</option>`).join('')}
+      </select></td>
+      <td id="p4m-${i}">-</td>
+    </tr>`;
+  }
+  document.getElementById('p4-body').innerHTML=rows;
+  const d=lsGet('p4d_'+(ME?.code||''));if(d)document.getElementById('p4-discuss').value=d;
+}
+function onP4(i){
+  const std=document.getElementById('p4std-'+i)?.value||'';
+  const t=document.getElementById('p4t-'+i)?.value;
+  const a=document.getElementById('p4a-'+i)?.value;
+  document.getElementById('p4t-'+i).className=`lv l${t||'_'}`;
+  document.getElementById('p4a-'+i).className=`lv l${a||'_'}`;
+  const mEl=document.getElementById('p4m-'+i);
+  if(mEl){
+    if(!t||!a)mEl.innerHTML='-';
+    else if(t===a)mEl.innerHTML='<span style="color:#22c55e;font-weight:700">✓ 일치</span>';
+    else mEl.innerHTML='<span class="mmb">불일치</span>';
+  }
+  localP4[i]={std,target:t||'',actual:a||''};
+}
+async function saveP4(){
+  const n=parseInt(document.getElementById('item-count2').value)||10;
+  for(let i=1;i<=n;i++)onP4(i);
+  await dbSet('entries/'+CODE+'/'+ME.memberKey+'/p4',localP4);
+  // 실습4 출제계획표에 자동 연동
+  syncP4toP5();
+  toast('✅ 실습3 저장! 실습4 출제계획표에 자동 반영됩니다.');
+}
+function syncP4toP5(){
+  // 성취기준별로 목표/판별 성취수준 집계
+  const stdMap={};
+  const n=parseInt(document.getElementById('item-count2')?.value)||10;
+  for(let i=1;i<=n;i++){
+    const d=localP4[i]||{};
+    if(!d.std) continue;
+    if(!stdMap[d.std]) stdMap[d.std]={std:d.std,target:{},actual:{}};
+    if(d.target) stdMap[d.std].target[d.target]=(stdMap[d.std].target[d.target]||0)+1;
+    if(d.actual) stdMap[d.std].actual[d.actual]=(stdMap[d.std].actual[d.actual]||0)+1;
+  }
+  // localP5Standards 업데이트
+  Object.values(stdMap).forEach(s=>{
+    const exists=localP5Standards.find(r=>r.std===s.std);
+    const row={std:s.std,A:0,B:0,C:0,D:0,E:0,
+      targetA:s.target.A||0,targetB:s.target.B||0,targetC:s.target.C||0,targetD:s.target.D||0,targetE:s.target.E||0,
+      actualA:s.actual.A||0,actualB:s.actual.B||0,actualC:s.actual.C||0,actualD:s.actual.D||0,actualE:s.actual.E||0
+    };
+    // 목표 성취수준 기준으로 문항 수 채우기
+    ['A','B','C','D','E'].forEach(l=>{ row[l]=s.target[l]||0; });
+    if(exists){ Object.assign(exists,row); }
+    else { localP5Standards.push(row); }
+  });
+}
+async function saveP4Discuss(){
+  const text=document.getElementById('p4-discuss').value.trim();
+  if(!text){alert('성찰 내용을 작성해주세요.');return;}
+  await dbSet('discusses/'+CODE+'/'+ME.memberKey+'/p4',{name:ME.name,num:ME.num||0,groupName:ME.groupName,groupIdx:ME.groupIdx,text,ts:Date.now()});
+  lsSet('p4d_'+(ME?.code||''),text);toast('✅ 실습3 성찰 공유 완료!');
+}
+
+/* ══════════════════════════════════════════
+   PHASE 5 — 실습4 출제계획
+══════════════════════════════════════════ */
+function initP5(){
+  // 실습3 데이터가 있으면 자동 연동
+  syncP4toP5();
+  renderP5Table();
+  const d=lsGet('p5d_'+(ME?.code||''));if(d)document.getElementById('p5-discuss').value=d;
+}
+function addStandard(){
+  const v=document.getElementById('p5-std').value.trim();
+  if(!v)return;
+  if(localP5Standards.find(r=>r.std===v)){toast('이미 있는 성취기준입니다.');return;}
+  localP5Standards.push({std:v,A:0,B:0,C:0,D:0,E:0});
+  document.getElementById('p5-std').value='';
+  renderP5Table();
+}
+function renderP5Table(){
+  const body=document.getElementById('p5-body');
+  if(!localP5Standards.length){
+    body.innerHTML='<tr><td colspan="16" style="text-align:center;color:var(--muted);padding:20px;font-size:.82rem">실습3에서 성취기준을 입력하고 저장하면 자동으로 반영됩니다.<br>또는 아래에서 직접 추가하세요.</td></tr>';
+    return;
+  }
+  const LVS=['A','B','C','D','E'];
+  const LV={A:0,B:1,C:2,D:3,E:4};
+
+  // 배지 스타일 헬퍼
+  function badge(val,bg,color,border){
+    const v=val||0;
+    const active=v>0;
+    return `<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;margin:auto;
+      font-weight:900;font-size:.92rem;border-radius:7px;
+      color:${active?color:'var(--muted)'};
+      background:${active?bg:'var(--surface)'};
+      border:1.5px solid ${active?border:'var(--border)'}">
+      ${v}
+    </div>`;
+  }
+
+  body.innerHTML=localP5Standards.map((r,i)=>{
+    // ② 목표 (읽기전용 배지)
+    const targetCells=LVS.map(l=>`<td style="background:#fffbeb;text-align:center;padding:5px 3px">${badge(r['target'+l]||r[l]||0,'#fef3c7','var(--p3)','#fcd34d')}</td>`).join('');
+
+    // ③ 판별 (읽기전용 배지)
+    const actualCells=LVS.map(l=>`<td style="background:#f0f9ff;text-align:center;padding:5px 3px">${badge(r['actual'+l]||0,'#dbeafe','var(--p2)','#93c5fd')}</td>`).join('');
+
+    // ④ 최종 조정 (직접 입력)
+    const adjustCells=LVS.map(l=>`
+      <td style="background:#f0fdf4;text-align:center;padding:5px 3px">
+        <input type="number" value="${r['adj'+l]!=null?r['adj'+l]:''}" min="0" max="30" placeholder="-"
+          style="width:38px;height:36px;text-align:center;margin-bottom:0;padding:3px 2px;
+            font-size:.88rem;font-weight:700;color:var(--lva);
+            background:#f0fdf4;border-color:#86efac;border-radius:7px"
+          onchange="localP5Standards[${i}]['adj${l}']=parseInt(this.value)||0;renderP5Changes(${i})">
+      </td>`).join('');
+
+    return `<tr>
+      <td style="font-size:.78rem;font-family:'DM Mono';white-space:nowrap;padding:8px 10px">${r.std||'–'}</td>
+      ${targetCells}
+      ${actualCells}
+      ${adjustCells}
+      <td style="text-align:center">
+        <button class="btn btn-danger" style="padding:3px 8px;font-size:.7rem" onclick="localP5Standards.splice(${i},1);renderP5Table()">✕</button>
+      </td>
+    </tr>
+    <tr id="p5change-${i}" style="background:#f9fafb">
+      <td colspan="16" id="p5change-cell-${i}" style="padding:4px 10px 8px;font-size:.76rem;color:var(--muted)"></td>
+    </tr>`;
+  }).join('');
+
+  // 변화 표시 초기화
+  localP5Standards.forEach((_,i)=>renderP5Changes(i));
+}
+
+function renderP5Changes(i){
+  const r=localP5Standards[i];
+  if(!r)return;
+  const LVS=['A','B','C','D','E'];
+  const LV={A:0,B:1,C:2,D:3,E:4};
+  const el=document.getElementById('p5change-cell-'+i);
+  if(!el)return;
+
+  const changes=[];
+  LVS.forEach(l=>{
+    const target=r['target'+l]||r[l]||0;
+    const adj=r['adj'+l]!=null?r['adj'+l]:null;
+    if(adj===null||adj===''||adj===undefined)return;
+    const diff=adj-target;
+    if(diff===0)return;
+    const dir=diff>0?'↑':'↓';
+    const col=diff>0?'#14532d':'#b91c1c';
+    changes.push(`<span style="margin-right:8px">
+      <span style="font-weight:700">${l}</span>:
+      <span style="color:var(--muted)">${target}</span>
+      <span style="color:${col};font-weight:700"> ${dir}${Math.abs(diff)} → ${adj}</span>
+    </span>`);
+  });
+
+  if(!changes.length){
+    el.innerHTML='<span style="color:#ccc">조정 없음</span>';
+  } else {
+    el.innerHTML='📝 조정 내역: '+changes.join('');
+  }
+}
+
+function renderP5Total(){
+  // P5에서는 개별 합산 없이 변화 표시로 대체
+  localP5Standards.forEach((_,i)=>renderP5Changes(i));
+}
+
+async function saveP5(){
+  await dbSet('entries/'+CODE+'/'+ME.memberKey+'/p5',{standards:localP5Standards});
+  toast('✅ 실습4 저장!');
+}
+async function saveP5Discuss(){
+  const text=document.getElementById('p5-discuss').value.trim();
+  if(!text){alert('성찰 내용을 작성해주세요.');return;}
+  await dbSet('discusses/'+CODE+'/'+ME.memberKey+'/p5',{name:ME.name,num:ME.num||0,groupName:ME.groupName,groupIdx:ME.groupIdx,text,ts:Date.now()});
+  lsSet('p5d_'+(ME?.code||''),text);toast('✅ 실습4 성찰 공유 완료!');
+}
+
+/* ══════════════════════════════════════════
+   FILL MODAL
+══════════════════════════════════════════ */
+function openFill(phase){
+  fillPhase=phase;
+  document.getElementById('fill-range-wrap').style.display=phase===2?'block':'none';
+  document.getElementById('fill-modal').classList.add('open');
+}
+function closeFill(){document.getElementById('fill-modal').classList.remove('open');}
+function applyFill(){
+  const lv=document.getElementById('fl').value,rg=document.getElementById('fr').value;
+  if(!lv){alert('수준을 선택해주세요.');return;}
+  if(fillPhase===1){
+    for(let i=1;i<=40;i++){const s=document.getElementById('p1s-'+i);if(s){s.value=lv;s.className=`lv l${lv}`;localP1[i]=lv;}}
+    updateP1Prog();
+  }else if(fillPhase===2){
+    for(let i=1;i<=40;i++){
+      if(rg!=='s2'){const s=document.getElementById('p1s-'+i);if(s){s.value=lv;s.className=`lv l${lv}`;localP1[i]=lv;}}
+      if(rg!=='s1'){const s=document.getElementById('p2s-'+i);if(s){s.value=lv;s.className=`lv l${lv}`;localP2[i]=lv;const dEl=document.getElementById('diff-'+i);if(dEl)dEl.innerHTML=getDiff(localP1[i],lv);}}
+    }
+    updateP1Prog();updateP2Prog();
+  }
+  closeFill();toast(`전체 ${lv}로 설정됨`);
+}
+
+/* ══════════════════════════════════════════
+   임시저장
+══════════════════════════════════════════ */
+function saveDraft(key){
+  const map={p1d:'p1-discuss',p2d:'p2-discuss',p3d:'p3-discuss',p4d:'p4-discuss',p5d:'p5-discuss'};
+  const sessionKey = ME ? key+'_'+ME.code : key;
+  lsSet(sessionKey, document.getElementById(map[key]).value);
+  toast('임시저장됨');
+}
+
+/* ══════════════════════════════════════════
+   PHASE 6 — 강사 대시보드
+══════════════════════════════════════════ */
+let _dashListening=false;
+let _dashCode=null;
+
+function resetDash(){
+  window._dashData=null;
+  _dashListening=false;
+  _dashCode=null;
+}
+
+function refreshDash(){
+  if(!CODE&&!SESSION){
+    document.getElementById('dash-content').innerHTML='<div class="emp"><div class="ic">⚠️</div><p>세션이 없습니다. 강사 탭에서 세션을 먼저 생성하세요.</p></div>';
+    return;
+  }
+  const activeCode=CODE||SESSION?.code;
+
+  // 같은 세션 이미 구독 중이면 스킵
+  if(_dashListening && _dashCode===activeCode) return;
+  _dashListening=true;
+  _dashCode=activeCode;
+
+  document.getElementById('dash-stats').innerHTML='';
+  document.getElementById('dash-content').innerHTML='<div class="emp"><div class="ic">⏳</div><p style="font-size:.82rem">데이터 불러오는 중...</p></div>';
+
+  let _members={}, _entries={}, _discusses={};
+
+  function redraw(){
+    const mList=Object.values(_members).sort((a,b)=>{
+      const ga=parseInt(a.groupName)||0, gb=parseInt(b.groupName)||0;
+      return ga!==gb?ga-gb:(a.num||0)-(b.num||0);
+    });
+    const eMap=_entries, dMap=_discusses;
+    const mk=m=>m.memberKey||m.groupId+'_'+m.name;
+
+    const p1done=mList.filter(m=>eMap[mk(m)]?.p1).length;
+    const p2done=mList.filter(m=>eMap[mk(m)]?.p2).length;
+    const p3done=mList.filter(m=>eMap[mk(m)]?.p3).length;
+    const p4done=mList.filter(m=>eMap[mk(m)]?.p4).length;
+    const p5done=mList.filter(m=>eMap[mk(m)]?.p5).length;
+    const p1dis=Object.values(dMap).filter(d=>d.p1).length;
+    const p2dis=Object.values(dMap).filter(d=>d.p2).length;
+    const p3dis=Object.values(dMap).filter(d=>d.p3).length;
+    const p4dis=Object.values(dMap).filter(d=>d.p4).length;
+    const p5dis=Object.values(dMap).filter(d=>d.p5).length;
+
+    document.getElementById('dash-stats').innerHTML=`
+      <div class="sb"><div class="sv c0">${mList.length}</div><div class="sl">참가 인원</div></div>
+      <div class="sb" style="border-top:3px solid var(--p1)"><div class="sv" style="color:var(--p1)">${p1done}</div><div class="sl">실습1-1 입력</div></div>
+      <div class="sb" style="border-top:3px solid var(--p1)"><div class="sv" style="color:var(--p1)">${p1dis}</div><div class="sl">실습1-1 토의</div></div>
+      <div class="sb" style="border-top:3px solid var(--p2)"><div class="sv" style="color:var(--p2)">${p2done}</div><div class="sl">실습1-2 입력</div></div>
+      <div class="sb" style="border-top:3px solid var(--p2)"><div class="sv" style="color:var(--p2)">${p2dis}</div><div class="sl">실습1-2 토의</div></div>
+      <div class="sb" style="border-top:3px solid var(--p3)"><div class="sv" style="color:var(--p3)">${p3done}</div><div class="sl">실습2 입력</div></div>
+      <div class="sb" style="border-top:3px solid var(--p3)"><div class="sv" style="color:var(--p3)">${p3dis}</div><div class="sl">실습2 토의</div></div>
+      <div class="sb" style="border-top:3px solid var(--p4)"><div class="sv" style="color:var(--p4)">${p4done}</div><div class="sl">실습3 입력</div></div>
+      <div class="sb" style="border-top:3px solid var(--p4)"><div class="sv" style="color:var(--p4)">${p4dis}</div><div class="sl">실습3 성찰</div></div>
+      <div class="sb" style="border-top:3px solid #22c55e"><div class="sv" style="color:#22c55e">${p5done}</div><div class="sl">실습4 입력</div></div>
+      <div class="sb" style="border-top:3px solid #22c55e"><div class="sv" style="color:#22c55e">${p5dis}</div><div class="sl">실습4 성찰</div></div>
+    `;
+    window._dashData={mList,eMap,dMap};
+    setDashTab(dashTab);
+  }
+
+  dbOn('members/'+activeCode, data=>{ _members=data||{}; redraw(); });
+  dbOn('entries/'+activeCode, data=>{ _entries=data||{}; redraw(); });
+  dbOn('discusses/'+activeCode, data=>{ _discusses=data||{}; redraw(); });
+}
+
+function setDashTab(t){
+  dashTab=t;
+  document.querySelectorAll('[id^="dt-"]').forEach((b,i)=>b.classList.toggle('active',i===t));
+  const el=document.getElementById('dash-content');
+  if(!window._dashData){
+    refreshDash();
+    return;
+  }
+  const {mList,eMap,dMap}=window._dashData;
+  if(t===0)renderDashMembers(el,mList);
+  else if(t===1)renderDashP1(el,mList,eMap,dMap);
+  else if(t===2)renderDashP2(el,mList,eMap,dMap);
+  else if(t===3)renderDashP3(el,mList,eMap,dMap);
+  else if(t===4)renderDashP4(el,mList,eMap,dMap);
+  else if(t===5)renderDashP5(el,mList,eMap,dMap);
+}
+
+
+
+
+
+function renderDashMembers(el,mList){
+  if(!mList.length){
+    el.innerHTML='<div class="emp"><div class="ic">⏳</div><p>아직 입장한 연수생이 없습니다.</p></div>';
+    return;
+  }
+
+  // 모둠별로 그룹핑 후 번호순 정렬
+  const groups={};
+  mList.forEach(m=>{
+    const gn=m.groupName||'미지정';
+    if(!groups[gn]) groups[gn]={colorIdx:m.groupIdx||0, members:[]};
+    groups[gn].members.push(m);
+  });
+  Object.values(groups).forEach(g=>{
+    g.members.sort((a,b)=>(a.num||0)-(b.num||0));
+  });
+
+  const totalCount = mList.length;
+  let html=`<p style="font-size:.78rem;color:var(--muted);margin-bottom:14px">총 <b>${totalCount}명</b> 입장 완료</p>`;
+  html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">';
+
+  Object.entries(groups).forEach(([gname,g])=>{
+    html+=`<div class="card" style="border-top:3px solid;padding:14px 16px" class="bdt${g.colorIdx}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-weight:700;font-size:.9rem" class="c${g.colorIdx}">${gname}</div>
+        <div style="font-size:.72rem;background:var(--s2);padding:2px 8px;border-radius:10px;color:var(--muted)">${g.members.length}명</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        ${g.members.map(m=>`
+          <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--s2);border-radius:7px">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--c${g.colorIdx});display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.72rem;color:#fff;background:var(--accent);flex-shrink:0">
+              ${m.num||'?'}
+            </div>
+            <div>
+              <div style="font-weight:600;font-size:.84rem">${m.name}</div>
+              <div style="font-size:.68rem;color:var(--muted)">${gname} ${m.num||'?'}번</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  });
+
+  html+='</div>';
+  el.innerHTML=html;
+}
+
+// ── 모둠 필터 헬퍼 ──
+function makeGroupFilter(id,groups,onchange){
+  return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <span style="font-size:.76rem;font-weight:600;color:var(--muted)">모둠 필터</span>
+    <select id="${id}" style="margin-bottom:0;width:auto;padding:5px 12px;font-size:.82rem" onchange="${onchange}">
+      ${['전체 모둠',...groups].map(g=>`<option>${g}</option>`).join('')}
+    </select>
+  </div>`;
+}
+
+function renderDashP1(el,mList,eMap,dMap){
+  if(!mList.length){el.innerHTML='<div class="emp"><div class="ic">📭</div><p>데이터 없음</p></div>';return;}
+  mList.sort((a,b)=>{const ga=parseInt(a.groupName)||0,gb=parseInt(b.groupName)||0;return ga!==gb?ga-gb:(a.num||0)-(b.num||0);});
+  const mk=m=>m.memberKey||m.groupId+'_'+m.name;
+  const groups=[...new Set(mList.map(m=>m.groupName).sort((a,b)=>(parseInt(a)||0)-(parseInt(b)||0)))];
+
+  window._p1table=function(fg){
+    const fl=fg==='전체 모둠'?mList:mList.filter(m=>m.groupName===fg);
+    if(!fl.length)return '<div class="emp" style="padding:16px"><p style="font-size:.82rem">해당 모둠 데이터 없음</p></div>';
+    let h='<div style="overflow-x:auto"><table class="ct"><thead><tr><th>번호</th>';
+    fl.forEach((m,i)=>{h+=`<th class="gh bdt${m.groupIdx||i%6}">${m.groupName}<br><span style="font-weight:700;font-size:.76rem">${m.num||'?'}번</span> <span style="font-weight:400;opacity:.7">${m.name}</span></th>`;});
+    h+='</tr></thead><tbody>';
+    for(let n=1;n<=40;n++){
+      const vals=fl.map(m=>(eMap[mk(m)]?.p1||{})[n]||'');
+      if(!vals.some(v=>v))continue;
+      h+=`<tr><td class="nc">${n}</td>`;
+      vals.forEach(v=>{h+=`<td><div class="lb b${v||'_'}">${v||'–'}</div></td>`;});
+      h+='</tr>';
+    }
+    return h+'</tbody></table></div>';
+  };
+
+  const discusses=mList.map(m=>dMap[mk(m)]?.p1).filter(Boolean);
+  window._p1discuss=function(fg){
+    const list=fg==='전체 모둠'?discusses:discusses.filter(d=>d.groupName===fg);
+    if(!list.length)return '<div class="emp" style="padding:16px"><p style="font-size:.82rem">해당 모둠 성찰 없음</p></div>';
+    return list.map(d=>`<div class="refl-card" style="border-left:3px solid var(--p1)"><div class="refl-h"><div class="refl-av" style="background:var(--p1)">${d.name[0]}</div><div><div class="refl-name">${d.groupName} ${d.num||''}번 · ${d.name}</div><div class="refl-group">${new Date(d.ts).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} 작성</div></div></div><div class="refl-text">${d.text}</div></div>`).join('');
+  };
+
+  const oc=`(function(){var fg=document.getElementById('gf-p1').value;document.getElementById('p1tw').innerHTML=window._p1table(fg);if(document.getElementById('p1dw'))document.getElementById('p1dw').innerHTML=window._p1discuss(fg);})()`;
+  let h='<p style="font-size:.74rem;color:var(--muted);margin-bottom:10px">정성준거 성취수준 (1~40번 학생)</p>';
+  h+=makeGroupFilter('gf-p1',groups,oc);
+  h+=`<div id="p1tw">${window._p1table('전체 모둠')}</div>`;
+  if(discusses.length){
+    h+='<div class="section-divider"><span>실습1-1 토의 성찰 내용</span></div>';
+    h+=`<div id="p1dw">${window._p1discuss('전체 모둠')}</div>`;
+  }
+  el.innerHTML=h;
+}
+
+function renderDashP2(el,mList,eMap,dMap){
+  if(!mList.length){el.innerHTML='<div class="emp"><div class="ic">📭</div><p>데이터 없음</p></div>';return;}
+  mList.sort((a,b)=>{const ga=parseInt(a.groupName)||0,gb=parseInt(b.groupName)||0;return ga!==gb?ga-gb:(a.num||0)-(b.num||0);});
+  const mk=m=>m.memberKey||m.groupId+'_'+m.name;
+  const groups=[...new Set(mList.map(m=>m.groupName).sort((a,b)=>(parseInt(a)||0)-(parseInt(b)||0)))];
+
+  window._p2cards=function(fg){
+    const fl=fg==='전체 모둠'?mList:mList.filter(m=>m.groupName===fg);
+    let h='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:16px">';
+    fl.forEach(m=>{
+      const p1=eMap[mk(m)]?.p1||{},p2=eMap[mk(m)]?.p2||{};
+      let total=0,match=0,diffUp=0,diffDown=0,diffs=[];
+      for(let n=1;n<=40;n++){const s1=p1[n]||'',s2=p2[n]||'';if(!s1||!s2)continue;total++;if(s1===s2)match++;else{const d=LV[s2]-LV[s1];if(d<0)diffUp++;else diffDown++;diffs.push({n,s1,s2,d});}}
+      const pct=total>0?Math.round(match/total*100):0;
+      const bc=pct>=80?'#22c55e':pct>=60?'#f59e0b':'#ef4444';
+      h+=`<div class="card" style="padding:14px 16px;border-top:3px solid var(--accent)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div class="mav bg${m.groupIdx||0}">${m.num||'?'}</div>
+          <div><div style="font-weight:700;font-size:.88rem">${m.name}</div><div style="font-size:.7rem;color:var(--muted)">${m.groupName} ${m.num||'?'}번</div></div>
+          <div style="margin-left:auto;text-align:right"><div style="font-size:1.3rem;font-weight:900;color:${bc}">${pct}%</div><div style="font-size:.64rem;color:var(--muted)">일치율</div></div>
+        </div>
+        <div style="height:6px;background:var(--s2);border-radius:3px;overflow:hidden;margin-bottom:8px"><div style="height:100%;width:${pct}%;background:${bc};border-radius:3px"></div></div>
+        <div style="display:flex;gap:5px;font-size:.7rem;margin-bottom:8px">
+          <span style="background:#dcfce7;color:#14532d;padding:2px 7px;border-radius:4px;font-weight:600">일치 ${match}명</span>
+          <span style="background:#dbeafe;color:#1e3a8a;padding:2px 7px;border-radius:4px;font-weight:600">↑ ${diffUp}명</span>
+          <span style="background:#fee2e2;color:#7f1d1d;padding:2px 7px;border-radius:4px;font-weight:600">↓ ${diffDown}명</span>
+        </div>
+        ${diffs.length?`<div style="font-size:.68rem;color:var(--muted);margin-bottom:4px">차이 발생:</div><div style="display:flex;flex-wrap:wrap;gap:3px">${diffs.map(d=>`<div style="display:flex;align-items:center;gap:2px;background:var(--s2);border-radius:4px;padding:2px 5px;font-size:.68rem"><span style="font-family:'DM Mono';color:var(--muted)">${d.n}번</span><div class="lb b${d.s1}" style="width:17px;height:17px;font-size:.6rem">${d.s1}</div><span>→</span><div class="lb b${d.s2}" style="width:17px;height:17px;font-size:.6rem">${d.s2}</div><span style="color:${d.d<0?'#14532d':'#b91c1c'};font-weight:700">${d.d<0?'↑':'↓'}</span></div>`).join('')}</div>`:`<div style="font-size:.72rem;color:#22c55e;font-weight:600">✅ 모든 학생 일치!</div>`}
+      </div>`;
+    });
+    return h+'</div>';
+  };
+
+  window._p2table=function(fg){
+    const fl=fg==='전체 모둠'?mList:mList.filter(m=>m.groupName===fg);
+    if(!fl.length)return '<div class="emp" style="padding:16px"><p style="font-size:.82rem">해당 모둠 데이터 없음</p></div>';
+    let h='<div style="overflow-x:auto"><table class="ct"><thead><tr><th>번호</th>';
+    fl.forEach((m,i)=>{h+=`<th class="gh bdt${m.groupIdx||i%6}">${m.groupName}<br><span style="font-weight:700;font-size:.76rem">${m.num||'?'}번</span> <span style="font-weight:400;opacity:.7">${m.name}</span></th>`;});
+    h+='<th>간 일치</th></tr></thead><tbody>';
+    for(let n=1;n<=40;n++){
+      const s2v=fl.map(m=>(eMap[mk(m)]?.p2||{})[n]||''),s1v=fl.map(m=>(eMap[mk(m)]?.p1||{})[n]||'');
+      const ne=s2v.filter(v=>v);if(!ne.length)continue;
+      const mm=ne.length>1&&new Set(ne).size>1;
+      h+=`<tr class="${mm?'mm':''}"><td class="nc">${n}</td>`;
+      s2v.forEach((v,i)=>{const s1=s1v[i],isDiff=s1&&v&&s1!==v;h+=`<td><div style="display:flex;align-items:center;justify-content:center;gap:2px"><div class="lb b${v||'_'}" style="${isDiff?'outline:2px solid #f59e0b;outline-offset:1px':''}">${v||'–'}</div>${s1?`<span style="font-size:.6rem;color:var(--muted)">(${s1})</span>`:''}</div></td>`;});
+      h+=`<td>${new Set(ne).size===1?'<span style="color:#22c55e;font-weight:700">✓</span>':mm?'<span class="mmb">불일치</span>':''}</td></tr>`;
+    }
+    return h+'</tbody></table></div>';
+  };
+
+  const discusses=mList.map(m=>dMap[mk(m)]?.p2).filter(Boolean);
+  window._p2discuss=function(fg){
+    const list=fg==='전체 모둠'?discusses:discusses.filter(d=>d.groupName===fg);
+    if(!list.length)return '<div class="emp" style="padding:16px"><p style="font-size:.82rem">해당 모둠 성찰 없음</p></div>';
+    return list.map(d=>`<div class="refl-card" style="border-left:3px solid var(--p2)"><div class="refl-h"><div class="refl-av" style="background:var(--p2)">${d.name[0]}</div><div><div class="refl-name">${d.groupName} ${d.num||''}번 · ${d.name}</div><div class="refl-group">${new Date(d.ts).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} 작성</div></div></div><div class="refl-text">${d.text}</div></div>`).join('');
+  };
+
+  const oc=`(function(){var fg=document.getElementById('gf-p2').value;document.getElementById('p2cw').innerHTML=window._p2cards(fg);document.getElementById('p2tw').innerHTML=window._p2table(fg);if(document.getElementById('p2dw'))document.getElementById('p2dw').innerHTML=window._p2discuss(fg);})()`;
+  let h='<div class="section-divider"><span>개인별 정성 vs 정량 일치도</span></div>';
+  h+=makeGroupFilter('gf-p2',groups,oc);
+  h+=`<div id="p2cw">${window._p2cards('전체 모둠')}</div>`;
+  h+='<div class="section-divider"><span>학생 번호별 전체 비교표</span></div>';
+  h+='<p style="font-size:.72rem;color:var(--muted);margin-bottom:8px">🔵 정량 · 괄호=정성 · 🟡=개인 내 차이 · 주황=연수생 간 불일치 · 빈 행 자동 숨김</p>';
+  h+=`<div id="p2tw">${window._p2table('전체 모둠')}</div>`;
+  if(discusses.length){
+    h+='<div class="section-divider"><span>실습1-2 토의 성찰 내용</span></div>';
+    h+=`<div id="p2dw">${window._p2discuss('전체 모둠')}</div>`;
+  }
+  el.innerHTML=h;
+}
+
+function renderDashP3(el,mList,eMap,dMap){
+  if(!mList.length){el.innerHTML='<div class="emp"><div class="ic">📭</div><p>데이터 없음</p></div>';return;}
+  mList.sort((a,b)=>{const ga=parseInt(a.groupName)||0,gb=parseInt(b.groupName)||0;return ga!==gb?ga-gb:(a.num||0)-(b.num||0);});
+  const mk=m=>m.memberKey||m.groupId+'_'+m.name;
+  const groups=[...new Set(mList.map(m=>m.groupName).sort((a,b)=>(parseInt(a)||0)-(parseInt(b)||0)))];
+
+  window._p3cards=function(fg){
+    const fl=fg==='전체 모둠'?mList:mList.filter(m=>m.groupName===fg);
+    let h='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-bottom:16px">';
+    fl.forEach(m=>{
+      const p3=eMap[mk(m)]?.p3||{};
+      const items=Object.entries(p3).filter(([,v])=>v&&(v.exp||v.act)).sort(([a],[b])=>parseInt(a)-parseInt(b));
+      if(!items.length){h+=`<div class="card" style="padding:14px 16px;border-top:3px solid var(--p3)"><div style="display:flex;align-items:center;gap:8px"><div class="mav bg${m.groupIdx||0}">${m.num||'?'}</div><div><div style="font-weight:700">${m.name}</div><div style="font-size:.7rem;color:var(--muted)">${m.groupName} ${m.num||'?'}번</div></div></div><div style="font-size:.78rem;color:var(--muted);margin-top:8px">미입력</div></div>`;return;}
+      let over=0,under=0,ok=0;
+      items.forEach(([,v])=>{const d=(v.act||0)-(v.exp||0);if(Math.abs(d)<=20)ok++;else if(d<-20)over++;else under++;});
+      h+=`<div class="card" style="padding:14px 16px;border-top:3px solid var(--p3)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div class="mav bg${m.groupIdx||0}">${m.num||'?'}</div>
+          <div><div style="font-weight:700;font-size:.88rem">${m.name}</div><div style="font-size:.7rem;color:var(--muted)">${m.groupName} ${m.num||'?'}번 · ${items.length}문항</div></div>
+        </div>
+        <div style="display:flex;gap:5px;font-size:.7rem;margin-bottom:8px">
+          <span style="background:#dcfce7;color:#14532d;padding:2px 7px;border-radius:4px;font-weight:600">적정 ${ok}</span>
+          <span style="background:#fee2e2;color:#7f1d1d;padding:2px 7px;border-radius:4px;font-weight:600">과대 ${over}</span>
+          <span style="background:#dbeafe;color:#1e3a8a;padding:2px 7px;border-radius:4px;font-weight:600">과소 ${under}</span>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:.72rem"><thead><tr>
+          ${['문항','예상%','실제%','차이','평가'].map(t=>`<th style="background:var(--s2);padding:3px 5px;text-align:center;border-bottom:1px solid var(--border)">${t}</th>`).join('')}
+        </tr></thead><tbody>
+          ${items.map(([n,v])=>{const diff=(v.act||0)-(v.exp||0);const isO=diff<-20,isU=diff>20;const lbl=isO?'과대':isU?'과소':'적정';const cls=isO?'color:#b91c1c':isU?'color:#1e3a8a':'color:#14532d';const bg=isO?'background:#fff0f0':isU?'background:#eff6ff':'';
+            return `<tr style="${bg}">${[''+n+'번',`${v.exp||0}%`,`${v.act||0}%`,`<span style="font-weight:700;${cls}">${diff>=0?'+':''}${diff.toFixed(1)}%p</span>`,`<span style="font-weight:700;${cls}">${lbl}</span>`].map(c=>`<td style="padding:3px 5px;text-align:center;border-bottom:1px solid var(--border)">${c}</td>`).join('')}</tr>`;}).join('')}
+        </tbody></table>
+      </div>`;
+    });
+    return h+'</div>';
+  };
+
+  const discusses=mList.map(m=>dMap[mk(m)]?.p3).filter(Boolean);
+  window._p3discuss=function(fg){
+    const list=fg==='전체 모둠'?discusses:discusses.filter(d=>d.groupName===fg);
+    if(!list.length)return '<div class="emp" style="padding:16px"><p style="font-size:.82rem">해당 모둠 성찰 없음</p></div>';
+    return list.map(d=>`<div class="refl-card" style="border-left:3px solid var(--p3)"><div class="refl-h"><div class="refl-av" style="background:var(--p3)">${d.name[0]}</div><div><div class="refl-name">${d.groupName} ${d.num||''}번 · ${d.name}</div><div class="refl-group">${new Date(d.ts).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} 작성</div></div></div><div class="refl-text">${d.text}</div></div>`).join('');
+  };
+
+  const oc=`(function(){var fg=document.getElementById('gf-p3').value;document.getElementById('p3cw').innerHTML=window._p3cards(fg);if(document.getElementById('p3dw'))document.getElementById('p3dw').innerHTML=window._p3discuss(fg);})()`;
+  let h='<div class="section-divider"><span>개인별 문항 정답률 분석</span></div>';
+  h+=makeGroupFilter('gf-p3',groups,oc);
+  h+=`<div id="p3cw">${window._p3cards('전체 모둠')}</div>`;
+  if(discusses.length){
+    h+='<div class="section-divider"><span>실습2 토의 성찰 내용</span></div>';
+    h+=`<div id="p3dw">${window._p3discuss('전체 모둠')}</div>`;
+  }
+  el.innerHTML=h;
+}
+
+function renderDashP4(el,mList,eMap,dMap){
+  if(!mList.length){el.innerHTML='<div class="emp"><div class="ic">📭</div><p>데이터 없음</p></div>';return;}
+  mList.sort((a,b)=>{const ga=parseInt(a.groupName)||0,gb=parseInt(b.groupName)||0;return ga!==gb?ga-gb:(a.num||0)-(b.num||0);});
+  const mk=m=>m.memberKey||m.groupId+'_'+m.name;
+  const groups=[...new Set(mList.map(m=>m.groupName).sort((a,b)=>(parseInt(a)||0)-(parseInt(b)||0)))];
+
+  window._p4cards=function(fg){
+    const fl=fg==='전체 모둠'?mList:mList.filter(m=>m.groupName===fg);
+    let h='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;margin-bottom:16px">';
+    fl.forEach(m=>{
+      const p4=eMap[mk(m)]?.p4||{};
+      const items=Object.entries(p4).filter(([,v])=>v&&(v.target||v.actual)).sort(([a],[b])=>parseInt(a)-parseInt(b));
+      if(!items.length){h+=`<div class="card" style="padding:14px 16px;border-top:3px solid var(--p3)"><div style="display:flex;align-items:center;gap:8px"><div class="mav bg${m.groupIdx||0}">${m.num||'?'}</div><div><div style="font-weight:700">${m.name}</div><div style="font-size:.7rem;color:var(--muted)">${m.groupName} ${m.num||'?'}번</div></div></div><div style="font-size:.78rem;color:var(--muted);margin-top:8px">미입력</div></div>`;return;}
+      let match=0,diff=0;
+      items.forEach(([,v])=>{if(v.target&&v.actual){if(v.target===v.actual)match++;else diff++;}});
+      h+=`<div class="card" style="padding:14px 16px;border-top:3px solid var(--p3)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div class="mav bg${m.groupIdx||0}">${m.num||'?'}</div>
+          <div><div style="font-weight:700;font-size:.88rem">${m.name}</div><div style="font-size:.7rem;color:var(--muted)">${m.groupName} ${m.num||'?'}번 · ${items.length}문항</div></div>
+        </div>
+        <div style="display:flex;gap:5px;font-size:.7rem;margin-bottom:8px">
+          <span style="background:#dcfce7;color:#14532d;padding:2px 7px;border-radius:4px;font-weight:600">일치 ${match}문항</span>
+          <span style="background:#fee2e2;color:#7f1d1d;padding:2px 7px;border-radius:4px;font-weight:600">불일치 ${diff}문항</span>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:.72rem"><thead><tr>
+          <th style="background:var(--s2);padding:3px 6px;border-bottom:1px solid var(--border)">문항</th>
+          <th style="background:var(--s2);padding:3px 6px;border-bottom:1px solid var(--border)">성취기준</th>
+          <th style="background:var(--s2);padding:3px 5px;text-align:center;border-bottom:1px solid var(--border);color:var(--p3)">목표</th>
+          <th style="background:var(--s2);padding:3px 5px;text-align:center;border-bottom:1px solid var(--border);color:var(--p2)">판별</th>
+          <th style="background:var(--s2);padding:3px 5px;text-align:center;border-bottom:1px solid var(--border)">일치</th>
+        </tr></thead><tbody>
+          ${items.map(([n,v])=>{
+            const isMatch=v.target&&v.actual&&v.target===v.actual;
+            const bg=v.target&&v.actual&&!isMatch?'background:#fff8f4':'';
+            return `<tr style="${bg}">
+              <td style="padding:3px 5px;text-align:center;border-bottom:1px solid var(--border);font-family:'DM Mono'">${n}번</td>
+              <td style="padding:3px 6px;border-bottom:1px solid var(--border);font-size:.68rem;color:var(--muted)">${v.std||'–'}</td>
+              <td style="padding:3px 5px;text-align:center;border-bottom:1px solid var(--border)"><div class="lb b${v.target||'_'}" style="width:22px;height:22px;font-size:.78rem;margin:auto">${v.target||'–'}</div></td>
+              <td style="padding:3px 5px;text-align:center;border-bottom:1px solid var(--border)"><div class="lb b${v.actual||'_'}" style="width:22px;height:22px;font-size:.78rem;margin:auto">${v.actual||'–'}</div></td>
+              <td style="padding:3px 5px;text-align:center;border-bottom:1px solid var(--border)">${!v.target||!v.actual?'–':isMatch?'<span style="color:#22c55e;font-weight:700">✓</span>':'<span class="mmb">불일치</span>'}</td>
+            </tr>`;
+          }).join('')}
+        </tbody></table>
+      </div>`;
+    });
+    return h+'</div>';
+  };
+
+  const discusses=mList.map(m=>dMap[mk(m)]?.p4).filter(Boolean);
+  window._p4discuss=function(fg){
+    const list=fg==='전체 모둠'?discusses:discusses.filter(d=>d.groupName===fg);
+    if(!list.length)return '<div class="emp" style="padding:16px"><p style="font-size:.82rem">해당 모둠 성찰 없음</p></div>';
+    return list.map(d=>`<div class="refl-card" style="border-left:3px solid var(--p3)"><div class="refl-h"><div class="refl-av" style="background:var(--p3)">${d.name[0]}</div><div><div class="refl-name">${d.groupName} ${d.num||''}번 · ${d.name}</div><div class="refl-group">${new Date(d.ts).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} 작성</div></div></div><div class="refl-text">${d.text}</div></div>`).join('');
+  };
+
+  const oc=`(function(){var fg=document.getElementById('gf-p4').value;document.getElementById('p4cw').innerHTML=window._p4cards(fg);if(document.getElementById('p4dw'))document.getElementById('p4dw').innerHTML=window._p4discuss(fg);})()`;
+  let h='<div class="section-divider"><span>실습3 · 목표 vs 판별 성취수준</span></div>';
+  h+=makeGroupFilter('gf-p4',groups,oc);
+  h+=`<div id="p4cw">${window._p4cards('전체 모둠')}</div>`;
+  if(discusses.length){
+    h+='<div class="section-divider"><span>실습3 성찰 내용</span></div>';
+    h+=`<div id="p4dw">${window._p4discuss('전체 모둠')}</div>`;
+  }
+  el.innerHTML=h;
+}
+
+function renderDashP5(el,mList,eMap,dMap){
+  if(!mList.length){el.innerHTML='<div class="emp"><div class="ic">📭</div><p>데이터 없음</p></div>';return;}
+  mList.sort((a,b)=>{const ga=parseInt(a.groupName)||0,gb=parseInt(b.groupName)||0;return ga!==gb?ga-gb:(a.num||0)-(b.num||0);});
+  const mk=m=>m.memberKey||m.groupId+'_'+m.name;
+  const groups=[...new Set(mList.map(m=>m.groupName).sort((a,b)=>(parseInt(a)||0)-(parseInt(b)||0)))];
+  const LVS=['A','B','C','D','E'];
+
+  window._p5cards=function(fg){
+    const fl=fg==='전체 모둠'?mList:mList.filter(m=>m.groupName===fg);
+    let h='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:12px;margin-bottom:16px">';
+    fl.forEach(m=>{
+      const p5=eMap[mk(m)]?.p5||{};
+      const stds=p5.standards||[];
+      if(!stds.length){h+=`<div class="card" style="padding:14px 16px;border-top:3px solid var(--p4)"><div style="display:flex;align-items:center;gap:8px"><div class="mav bg${m.groupIdx||0}">${m.num||'?'}</div><div><div style="font-weight:700">${m.name}</div><div style="font-size:.7rem;color:var(--muted)">${m.groupName} ${m.num||'?'}번</div></div></div><div style="font-size:.78rem;color:var(--muted);margin-top:8px">미입력</div></div>`;return;}
+      h+=`<div class="card" style="padding:14px 16px;border-top:3px solid var(--p4)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div class="mav bg${m.groupIdx||0}">${m.num||'?'}</div>
+          <div><div style="font-weight:700;font-size:.88rem">${m.name}</div><div style="font-size:.7rem;color:var(--muted)">${m.groupName} ${m.num||'?'}번</div></div>
+        </div>
+        <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.7rem">
+          <thead>
+            <tr>
+              <th style="background:var(--s2);padding:3px 5px;text-align:left;min-width:90px" rowspan="2">성취기준</th>
+              <th style="background:#fef3c7;color:var(--p3);padding:2px 4px;text-align:center" colspan="5">② 목표</th>
+              <th style="background:#e0f2fe;color:var(--p2);padding:2px 4px;text-align:center" colspan="5">③ 판별</th>
+              <th style="background:#dcfce7;color:var(--lva);padding:2px 4px;text-align:center" colspan="5">④ 최종조정</th>
+            </tr>
+            <tr>
+              ${LVS.map(l=>`<th style="background:#fef3c7;color:var(--p3);padding:2px 3px;text-align:center">${l}</th>`).join('')}
+              ${LVS.map(l=>`<th style="background:#e0f2fe;color:var(--p2);padding:2px 3px;text-align:center">${l}</th>`).join('')}
+              ${LVS.map(l=>`<th style="background:#dcfce7;color:var(--lva);padding:2px 3px;text-align:center">${l}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${stds.map(r=>{
+              const changes=LVS.filter(l=>{const t=r['target'+l]||r[l]||0;const a=r['adj'+l];return a!=null&&a!==''&&parseInt(a)!==t;})
+                .map(l=>{const t=r['target'+l]||r[l]||0;const a=parseInt(r['adj'+l]);const d=a-t;return `<span style="color:${d>0?'#14532d':'#b91c1c'};font-weight:700">${l}:${t}${d>0?'↑':'↓'}${a}</span>`;}).join(' ');
+              return `<tr>
+                <td style="padding:3px 4px;border-bottom:1px solid var(--border);font-family:'DM Mono';font-size:.65rem">${r.std}</td>
+                ${LVS.map(l=>{const v=r['target'+l]||r[l]||0;return `<td style="padding:2px 3px;text-align:center;border-bottom:1px solid var(--border);background:#fffbeb;font-weight:${v>0?'700':'400'};color:${v>0?'var(--p3)':'var(--muted)'}">${v||'–'}</td>`;}).join('')}
+                ${LVS.map(l=>{const v=r['actual'+l]||0;return `<td style="padding:2px 3px;text-align:center;border-bottom:1px solid var(--border);background:#f0f9ff;font-weight:${v>0?'700':'400'};color:${v>0?'var(--p2)':'var(--muted)'}">${v||'–'}</td>`;}).join('')}
+                ${LVS.map(l=>{const v=r['adj'+l];const has=v!=null&&v!=='';const t=r['target'+l]||r[l]||0;const chg=has&&parseInt(v)!==t;return `<td style="padding:2px 3px;text-align:center;border-bottom:1px solid var(--border);background:${has?'#f0fdf4':'var(--surface)'};font-weight:${has?'700':'400'};color:${chg?'var(--lva)':'var(--muted)'}${chg?';outline:2px solid #86efac;outline-offset:-2px':''}">${has?v:'–'}</td>`;}).join('')}
+              </tr>
+              ${changes?`<tr><td colspan="16" style="padding:2px 6px 5px;font-size:.67rem;color:var(--muted);background:#f9fafb">📝 ${changes}</td></tr>`:''}`;
+            }).join('')}
+          </tbody>
+        </table></div>
+      </div>`;
+    });
+    return h+'</div>';
+  };
+
+  const discusses=mList.map(m=>dMap[mk(m)]?.p5).filter(Boolean);
+  window._p5discuss=function(fg){
+    const list=fg==='전체 모둠'?discusses:discusses.filter(d=>d.groupName===fg);
+    if(!list.length)return '<div class="emp" style="padding:16px"><p style="font-size:.82rem">해당 모둠 성찰 없음</p></div>';
+    return list.map(d=>`<div class="refl-card" style="border-left:3px solid var(--p4)"><div class="refl-h"><div class="refl-av" style="background:var(--p4)">${d.name[0]}</div><div><div class="refl-name">${d.groupName} ${d.num||''}번 · ${d.name}</div><div class="refl-group">${new Date(d.ts).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} 작성</div></div></div><div class="refl-text">${d.text}</div></div>`).join('');
+  };
+
+  const oc=`(function(){var fg=document.getElementById('gf-p5').value;document.getElementById('p5cw').innerHTML=window._p5cards(fg);if(document.getElementById('p5dw'))document.getElementById('p5dw').innerHTML=window._p5discuss(fg);})()`;
+  let h='<div class="section-divider"><span>실습4 · 출제계획표 (목표 vs 판별 vs 최종조정 비교)</span></div>';
+  h+=makeGroupFilter('gf-p5',groups,oc);
+  h+=`<div id="p5cw">${window._p5cards('전체 모둠')}</div>`;
+  if(discusses.length){
+    h+='<div class="section-divider"><span>실습4 성찰 내용</span></div>';
+    h+=`<div id="p5dw">${window._p5discuss('전체 모둠')}</div>`;
+  }
+  el.innerHTML=h;
+}
+
+function renderDashDiscuss(el,dMap,key,title){
+  const colorMap={p1:'var(--p1)',p2:'var(--p2)',p3:'var(--p3)',p4:'var(--p4)',p5:'var(--p4)'};
+  const color=colorMap[key]||'var(--accent)';
+
+  const allList=Object.values(dMap)
+    .map(d=>d[key])
+    .filter(Boolean)
+    .sort((a,b)=>{
+      const ga=parseInt(a.groupName)||0, gb=parseInt(b.groupName)||0;
+      return ga!==gb ? ga-gb : (a.num||0)-(b.num||0);
+    });
+
+  if(!allList.length){
+    el.innerHTML='<div class="emp"><div class="ic">📝</div><p>아직 작성된 내용이 없습니다.<br><span style="font-size:.78rem">연수생이 작성 완료하면 자동으로 표시됩니다.</span></p></div>';
+    return;
+  }
+
+  const groups=['전체 모둠',...new Set(
+    allList.map(d=>d.groupName)
+      .sort((a,b)=>(parseInt(a)||0)-(parseInt(b)||0))
+  )];
+
+  const filterId='df-'+key;
+
+  window['_rdc_'+key]=function(fg){
+    const list=fg==='전체 모둠'?allList:allList.filter(d=>d.groupName===fg);
+    if(!list.length) return '<div class="emp" style="padding:20px"><p style="font-size:.82rem">해당 모둠의 성찰이 없습니다.</p></div>';
+    return list.map(d=>`
+      <div class="refl-card" style="border-left:3px solid ${color}">
+        <div class="refl-h">
+          <div class="refl-av" style="background:${color}">${d.name[0]}</div>
+          <div>
+            <div class="refl-name">${d.groupName} ${d.num||''}번 · ${d.name}</div>
+            <div class="refl-group">${new Date(d.ts).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} 작성</div>
+          </div>
+        </div>
+        <div class="refl-text">${d.text}</div>
+      </div>`).join('');
+  };
+
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <span style="font-size:.78rem;color:var(--muted)">${allList.length}명 작성 완료 · 실시간 업데이트</span>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+        <label style="font-size:.78rem;color:var(--muted);margin-bottom:0">모둠 필터</label>
+        <select id="${filterId}" style="margin-bottom:0;width:auto;padding:5px 12px;font-size:.82rem"
+          onchange="document.getElementById('${filterId}-cards').innerHTML=window['_rdc_${key}'](this.value)">
+          ${groups.map(g=>`<option>${g}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div id="${filterId}-cards">${window['_rdc_'+key]('전체 모둠')}</div>
+  `;
+}
+
+</script>
+</body>
+</html>
